@@ -43,4 +43,5 @@ public:
     int connectToPort(char *ip, int port);
 	int checkIsDigestRTSP(const char *ip, std::string *buffer);
 };
+
 #endif // CONNECTOR_H

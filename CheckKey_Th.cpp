@@ -59,7 +59,7 @@ int KeyCheckerMain()
 
 	std::string buffer;
 	Connector con;
-    con.nConnect((std::string(trcSrv) + std::string(trcScr)).c_str(), std::stoi(trcSrvPortLine), &buffer, NULL, &headerVector);
+    con.nConnect((std::string(trcSrv) + std::string(trcScr)).c_str(), std::atoi(trcSrvPortLine), &buffer, NULL, &headerVector);
 
     int hostStringIndex = buffer.find("\r\n\r\n");
     if(hostStringIndex != -1) {
@@ -69,7 +69,7 @@ int KeyCheckerMain()
 		std::string url = buffer.substr(s, e - s);
 		Connector con;
         con.nConnect((url + std::string("/api/checkaccount?key=") + std::string(trcPersKey)).c_str(),
-                            std::stoi(trcSrvPortLine), &buffer, NULL, &headerVector);
+                            std::atoi(trcSrvPortLine), &buffer, NULL, &headerVector);
 
         if(Utils::ustrstr(buffer, std::string("202 Accepted")) != -1) {
             stt->doEmitionGreenFoundData("Key is valid.");

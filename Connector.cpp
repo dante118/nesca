@@ -1,91 +1,5 @@
 #include "Connector.h"
 #include "SSHAuth.h"
-// #include "Filter.h" // Pantene: Где файл?
-
-//#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
-//int _pingMyTarget(const char *ip)
-//{
-//    HANDLE hIcmpFile;
-//    unsigned long ipaddr = INADDR_NONE;
-//    DWORD dwRetVal = 0;
-//    char SendData[32] = "Data Buffer";
-//    LPVOID ReplyBuffer = NULL;
-//    DWORD ReplySize = 0;
-//
-//    ipaddr = inet_addr(ip);
-//
-//    if (ipaddr == INADDR_NONE)
-//    {
-//        stt->doEmitionRedFoundData("[Pinger] INADDR_NONE! [" + QString(ip) + "]");
-//        return 0;
-//    }
-//
-//    hIcmpFile = IcmpCreateFile();
-//    if (hIcmpFile == INVALID_HANDLE_VALUE)
-//    {
-//        stt->doEmitionRedFoundData("[Pinger] Unable to open handle. [" + QString::number(GetLastError()) + "]");
-//        return 0;
-//   }
-//
-//    ReplySize = sizeof(ICMP_ECHO_REPLY) + sizeof(SendData);
-//    ReplyBuffer = (VOID*) malloc(ReplySize);
-//    if (ReplyBuffer == NULL)
-//    {
-//        stt->doEmitionRedFoundData("[Pinger] Unable to allocate memory.");
-//        return 0;
-//    }
-//
-//    dwRetVal = IcmpSendEcho(hIcmpFile, ipaddr, SendData, sizeof(SendData),
-//        NULL, ReplyBuffer, ReplySize, gPingTimeout*1000);
-//    if (dwRetVal != 0) {
-//        PICMP_ECHO_REPLY pEchoReply = (PICMP_ECHO_REPLY)ReplyBuffer;
-//        struct in_addr ReplyAddr;
-//        ReplyAddr.S_un.S_addr = pEchoReply->Address;
-//        printf("\tSent icmp message to %s\n", "127.0.0.1");
-//        if (dwRetVal > 1)
-//        {
-//            if(gDebugMode) stt->doEmitionYellowFoundData("[Pinger] Received " + QString::number(dwRetVal) + " icmp message responses.");
-//        }
-//        else
-//        {
-//            if(gDebugMode) stt->doEmitionYellowFoundData("[Pinger] Received " + QString::number(dwRetVal) + " icmp message responses.");
-//        }
-//
-//        if(gDebugMode) stt->doEmitionYellowFoundData("[Pinger] Received from: " + QString(inet_ntoa( ReplyAddr )) + "; Status = " + QString::number(pEchoReply->Status) + "; Roundtrip time = " + QString::number(pEchoReply->RoundTripTime) + "ms.");
-//        return 1;
-//    }
-//    else
-//    {
-//        printf("\tCall to IcmpSendEcho failed.\n");
-//        printf("\tIcmpSendEcho returned error: %ld\n", GetLastError() );
-//        if(gDebugMode) stt->doEmitionRedFoundData("[Pinger] Call to IcmpSendEcho failed. IcmpSendEcho returned error: " + QString::number(GetLastError()));
-//        return 0;
-//    };
-//}
-//#else
-//int _pingMyTarget(const char *ip)
-//{
-//    FILE *pipe = popen(("ping -w " + std::to_string(gPingTimeout) + " " + ip).c_str(), "r");
-//    if(!pipe) {
-//        stt->doEmitionRedFoundData("Ping pipe failed: cannot open pipe.");
-//        perror("pipe");
-//        return 0;
-//    }
-//
-//    char buffer[128] = {0};
-//    std::string result;
-//
-//    while(!feof(pipe)) {
-//        if(fgets(buffer, 128, pipe) != NULL){
-//            result += buffer;
-//        }
-//    }
-//    pclose(pipe);
-//
-//    if(strstr((char*)result.c_str(), "100% packet loss") != NULL) return 0;
-//    return 1;
-//}
-//#endif
 
 struct data {
   char trace_ascii; /* 1 or 0 */
@@ -146,7 +60,7 @@ int pConnect(const char* ip, const int port, std::string *buffer,
 {
 	buffer->clear();
 	int res = 0;
-	CURL *curl = curl_easy_init();
+    CURL *curl = curl_easy_init();
 
 	if (curl != NULL)
 	{
@@ -231,10 +145,10 @@ int pConnect(const char* ip, const int port, std::string *buffer,
 			SOCKET eNobuffSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 			shutdown(eNobuffSocket, SD_BOTH);
 			closesocket(eNobuffSocket);
-			if (ENOBUFS == eNobuffSocket || ENOMEM == eNobuffSocket) {
+            /*if (ENOBUFS == eNobuffSocket || ENOMEM == eNobuffSocket) {
 				stt->doEmitionRedFoundData("Insufficient buffer/memory space. Sleeping for 10 sec...");
 				Sleep(10000);
-			}
+            }*/
 			return -1;
 		}
 		else {
@@ -519,10 +433,10 @@ bool portCheck(const char * sDVRIP, int wDVRPort) {
 				SOCKET eNobuffSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 				shutdown(eNobuffSocket, SD_BOTH);
 				closesocket(eNobuffSocket);
-				if (ENOBUFS == eNobuffSocket || ENOMEM == eNobuffSocket) {
+                /*if (ENOBUFS == eNobuffSocket || ENOMEM == eNobuffSocket) {
 					stt->doEmitionRedFoundData("Insufficient buffer/memory space. Sleeping for 10 sec...");
 					Sleep(10000);
-				}
+                }*/
 			}
 			return false;
 		}

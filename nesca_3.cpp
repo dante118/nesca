@@ -158,77 +158,11 @@ int PekoWidget::m_yPos = 0;
 int PekoWidget::m_windowCounter = 0;
 int PekoWidget::offset = 0;
 
-//
-//int psh_lul(PIP_ADAPTER_INFO zzaza)
-//{
-//	int chc = 0;
-//	for (int i = 0; i < zzaza->AddressLength; i++) chc += (zzaza->Address[i] << ((i & 1) * 8));
-//	return chc;
-//}
-//void hshjNune(int& mac1, int& mac2)
-//{
-//	IP_ADAPTER_INFO idrigenopho[32];
-//	DWORD dwBufLen = sizeof(idrigenopho);
-//	DWORD dwStatus = GetAdaptersInfo(idrigenopho, &dwBufLen);
-//	if (dwStatus != ERROR_SUCCESS) return;
-//	PIP_ADAPTER_INFO pidrigenopho = idrigenopho;
-//	mac1 = psh_lul(pidrigenopho);
-//	if (pidrigenopho->Next) mac2 = psh_lul(pidrigenopho->Next);
-//}
-//int hsh_hsh()
-//{
-//	DWORD psm = 0;
-//	GetVolumeInformation("C:\\", NULL, 0, &psm, NULL, NULL, NULL, 0);
-//	int ypyp = (int)((psm + (psm >> 16)) & 0xFFFF);
-//	return ypyp;
-//}
-//const char* fds_gds()
-//{
-//	static char computerName[1024];
-//	DWORD size = 1024;
-//	GetComputerName(computerName, &size);
-//	static char cn[1024];
-//	for (int i = 0, j = 0; i < 512; i += 2, ++j) memset(cn + j, computerName[i], 1);
-//	return cn;
-//}
-//std::string grgNun() {
-//	DWORD Type;
-//	char value[64] = { 0 };
-//	HKEY hkey;
-//	if (RegOpenKey(HKEY_LOCAL_MACHINE,
-//		TEXT("Software\\ISKOPASI\\nesca3\\jipjip"), &hkey) == ERROR_SUCCESS)
-//	{
-//		DWORD value_length = 256;
-//		RegQueryValueEx(hkey, "nepnep", 0, &Type, (BYTE*)&value, &value_length);
-//		RegCloseKey(hkey);
-//	}
-//
-//	std::string rNepnep = std::string(value);
-//	return rNepnep;
-//}
-//std::string ypypNunu()
-//{
-//	int fafa1, faf2;
-//	hshjNune(fafa1, faf2);
-//	int d2 = hsh_hsh();
-//	char fds[1024] = { 0 };
-//	strcpy(fds, fds_gds());
-//	const std::string resNunu = std::to_string(fafa1) + "-"
-//		+ std::to_string(d2) + "-" + std::string(fds) + "-"
-//		+ std::string(trcPersKey);
-//
-//	std::ostringstream strNunu;
-//	strNunu << std::setw(2) << std::setfill('0') << std::hex << std::uppercase;
-//	std::copy(resNunu.begin(), resNunu.end(), std::ostream_iterator<unsigned int>(strNunu, ""));
-//	return strNunu.str();
-//}
-//
-//
 void _LoadPersInfoToLocalVars(int savedTabIndex) {
 	//ZeroMemory(trcPersKey, sizeof(trcPersKey));
-	trcPersKey[0] = 0;
-	strncpy(trcPersKey, ui->linePersKey->text().toLocal8Bit().data(), 32);
-	memset(trcPersKey + 32, '\0', 1);
+    //trcPersKey[0] = 0;
+    //strncpy(trcPersKey, ui->linePersKey->text().toLocal8Bit().data(), 32);
+    //memset(trcPersKey + 32, '\0', 1);
 	currentIP[0] = 0;
 	finalIP[0] = 0;
 	gPorts[0] = 0;
@@ -286,15 +220,15 @@ void _LoadPersInfoToLocalVars(int savedTabIndex) {
 		gPorts[ui->importPortLine->text().length() + 2] = '\0';
 	};
 
-	strcpy(trcSrv, ui->lineTrackerSrv->text().toLocal8Bit().data());
-	strcpy(trcScr, ui->lineTrackerScr->text().toLocal8Bit().data());
-	strncpy(trcPersKey, ui->linePersKey->text().toLocal8Bit().data(), 32);
-	memset(trcPersKey + 32, '\0', 1);
-	strcpy(trcSrvPortLine, ui->trcSrvPortLine->text().toLocal8Bit().data());
+    /*strcpy(trcSrv, ui->lineTrackerSrv->text().toLocal8Bit().data());
+    strcpy(trcScr, ui->lineTrackerScr->text().toLocal8Bit().data());
+    strncpy(trcPersKey, ui->linePersKey->text().toLocal8Bit().data(), 32);
+    memset(trcPersKey + 32, '\0', 1);
+    strcpy(trcSrvPortLine, ui->trcSrvPortLine->text().toLocal8Bit().data());
 	strncpy(gProxyIP, ui->systemProxyIP->text().toLocal8Bit().data(), 64);
 	gProxyIP[ui->systemProxyIP->text().size()] = '\0';
 	strncpy(gProxyPort, ui->systemProxyPort->text().toLocal8Bit().data(), 8);
-	gProxyPort[ui->systemProxyPort->text().size()] = '\0';
+    gProxyPort[ui->systemProxyPort->text().size()] = '\0';*/
 }
 
 Ui::nesca_3Class *ui = new Ui::nesca_3Class;
@@ -440,7 +374,7 @@ void setSceneArea()
 
 void setButtonStyleArea()
 {
-	ui->checkKeyBut->setStyleSheet(
+    /*ui->checkKeyBut->setStyleSheet(
 		" #checkKeyBut {"
 		"background-color: qlineargradient(spread:none, x1:1, y1:0, x2:1, y2:1, stop:0.681818 rgba(0, 0, 0, 250), stop:1 rgba(255, 255, 255, 130));"
 		"color: #00b304;"
@@ -452,7 +386,7 @@ void setButtonStyleArea()
 		"color: #1efd00;"
 		"border: 0.5px solid qlineargradient(spread:reflect, x1:0.54, y1:0.488591, x2:0.54, y2:0, stop:0 rgba(255, 255, 255, 130), stop:1 rgba(0, 0, 0, 255));"
 		"}"
-		);
+        );*/
 	ui->importButton->setStyleSheet(
 		" #importButton {"
 		"background-color: qlineargradient(spread:none, x1:1, y1:0, x2:1, y2:1, stop:0.681818 rgba(0, 0, 0, 250), stop:1 rgba(255, 255, 255, 130));"
@@ -656,11 +590,11 @@ void SetValidators()
 	validator = new QRegExpValidator(QRegExp("(\\w|-|\\.)+((\\w|-|\\.)+)+"), NULL);
 	ui->lineILVL->setValidator(validator);
 
-	validator = new QRegExpValidator(QRegExp("\\d{1,5}"), NULL);
-	ui->trcSrvPortLine->setValidator(validator);
+    //validator = new QRegExpValidator(QRegExp("\\d{1,5}"), NULL);
+    //ui->trcSrvPortLine->setValidator(validator);
 	
-	validator = new QRegExpValidator(QRegExp("[a-zA-Z0-9]{32}"), NULL);
-	ui->linePersKey->setValidator(validator);
+    //validator = new QRegExpValidator(QRegExp("[a-zA-Z0-9]{32}"), NULL);
+    //ui->linePersKey->setValidator(validator);
 }
 
 void nesca_3::slotDrawTextPlacers()
@@ -2233,7 +2167,6 @@ void nesca_3::ConnectEvrthng()
 	connect ( ui->secretMessageBut_7, SIGNAL( clicked() ), this, SLOT( smReaction() ) );
 	connect ( ui->secretMessageBut_8, SIGNAL( clicked() ), this, SLOT( smReaction() ) );
 	connect ( ui->dataText, SIGNAL( anchorClicked(QUrl) ), this, SLOT( onLinkClicked(QUrl) ) );
-	connect ( ui->checkKeyBut, SIGNAL( clicked() ), this, SLOT( CheckPersKey() ) );
 	connect ( ui->DataflowModeBut, SIGNAL( clicked() ), this, SLOT( slotShowDataflow() ) );
 	connect ( ui->JobModeBut, SIGNAL( clicked() ), this, SLOT( switchToJobMode() ) );
 	connect ( ui->clearLogBut, SIGNAL( clicked() ), this, SLOT( slotClearLogs() ) );
@@ -2261,7 +2194,7 @@ void nesca_3::ConnectEvrthng()
 	connect ( ui->restoreDefaultPorts1, SIGNAL( clicked() ), this, SLOT( slotRestoreDefPorts() ) );
 	connect ( ui->restoreDefaultPorts2, SIGNAL( clicked() ), this, SLOT( slotRestoreDefPorts() ) );
 	connect ( ui->restoreDefaultPorts3, SIGNAL( clicked() ), this, SLOT( slotRestoreDefPorts() ) );
-	connect ( ui->dnsLine, SIGNAL(textChanged(QString)), this, SLOT(DNSLine_ValueChanged(QString)));
+    connect ( ui->dnsLine, SIGNAL(textChanged(QString)), this, SLOT(DNSLine_ValueChanged(QString)));
 
 	connect ( ui->ipLine, SIGNAL(				returnPressed() ), this, SLOT(	startScanButtonClicked() ) );
 	connect ( ui->threadLine, SIGNAL(			returnPressed() ), this, SLOT(	startScanButtonClicked() ) );
@@ -2464,9 +2397,9 @@ void RestoreSession()
 				};
 			};
 
-			setUIText("[NDBSERVER]:", ui->lineTrackerSrv, resStr);
+            /*setUIText("[NDBSERVER]:", ui->lineTrackerSrv, resStr);
 			setUIText("[NDBSCRIPT]:", ui->lineTrackerScr, resStr);
-			setUIText("[NDBPORT]:", ui->trcSrvPortLine, resStr);
+            setUIText("[NDBPORT]:", ui->trcSrvPortLine, resStr);*/
 			if (strstr(resStr, "[PING]:") != NULL) {
 				lex = strstr(resStr, "[PING]:") + strlen("[PING]:");
 
@@ -2503,20 +2436,20 @@ void RestoreSession()
 				}
 			}
 			setUIText("[MAXBTHR]:", ui->maxBrutingThrBox, resStr);
-			setUIText("[PERSKEY]:", ui->linePersKey, resStr);
+            //setUIText("[PERSKEY]:", ui->linePersKey, resStr);
 			//ZeroMemory(trcPersKey, sizeof(trcPersKey));
 			trcPersKey[0] = 0;
 			strncpy(trcPersKey, resStr, 32);
 			memset(trcPersKey + 32, '\0', 1);
-			setUIText("[SYSTEMPROXYIP]:", ui->systemProxyIP, resStr);
-			setUIText("[SYSTEMPROXYPORT]:", ui->systemProxyPort, resStr);
+            /*setUIText("[SYSTEMPROXYIP]:", ui->systemProxyIP, resStr);
+            setUIText("[SYSTEMPROXYPORT]:", ui->systemProxyPort, resStr);*/
 
 			resStr[0] = 0;
 			//ZeroMemory(resStr, sizeof(resStr));
 		};
 
 		fclose(resFile);
-		_LoadPersInfoToLocalVars(nesca_3::savedTabIndex);
+        //_LoadPersInfoToLocalVars(nesca_3::savedTabIndex);
 		stt->doEmitionGreenFoundData("Previous session loaded.");
 	};
 }
@@ -2690,21 +2623,6 @@ void nesca_3::startScanButtonClicked()
 	if(startFlag == false)
 	{
 		stt->doEmitionStartScanIP();
-		/*if(trackerOK)
-		{
-			if(ui->linePersKey->text().size() != 0)
-			{
-				CheckPersKey();
-			}
-			else
-			{
-				stt->doEmitionRedFoundData("Empty \"Personal key\" field. ");
-			};
-		}
-		else
-		{
-			stt->doEmitionStartScanIP();		
-		};*/
 	}
 	else
 	{
@@ -2882,7 +2800,7 @@ void nesca_3::IPScanSeq()
 			ui->tabMainWidget->setTabEnabled(1, false);
 			ui->tabMainWidget->setTabEnabled(2, false);
 
-			saveOptions();
+            saveOptions();
 
 			stt->setMode(0);
 			stt->setTarget((ui->ipLine->text().indexOf("-") > 0 ? ui->ipLine->text() :
@@ -2929,7 +2847,7 @@ void nesca_3::DNSScanSeq()
 				ui->lineILVL->setText(topLevelDomainStr);
 			};
 
-			saveOptions();
+            //saveOptions();
 
 			stt->setMode(1);
 			stt->setTarget(ui->dnsLine->text());
@@ -2974,7 +2892,7 @@ void nesca_3::ImportScanSeq()
 		ui->tabMainWidget->setTabEnabled(0, false);
 		ui->tabMainWidget->setTabEnabled(1, false);
 
-		_LoadPersInfoToLocalVars(savedTabIndex);
+        //_LoadPersInfoToLocalVars(savedTabIndex);
 
 		stt->setMode(-1);
 		stt->setTarget(fileName);
@@ -3175,7 +3093,7 @@ void nesca_3::finishLoading() {
 	//fuThread.detach();
 
 	_startVerCheck();
-	_startMsgCheck();
+    //_startMsgCheck();
 	qrp.setMinimal(true);
 	drawVerboseArcs(0);
 
@@ -3412,7 +3330,7 @@ nesca_3::nesca_3(bool isWM, QWidget *parent = 0) : QMainWindow(parent)
 	ui->tabMainWidget->setTabEnabled(0, true);
 	ui->tabMainWidget->setTabEnabled(1, true);
 	ui->tabMainWidget->setTabEnabled(2, true);
-	finishLoading();
+    finishLoading();
 
 /*
 	FILE* pipe = NULL;
@@ -3444,7 +3362,7 @@ nesca_3::nesca_3(bool isWM, QWidget *parent = 0) : QMainWindow(parent)
 
 nesca_3::~nesca_3()
 {
-	delete[] ui;
+    delete ui;
 }
 
 void nesca_3::STTTerminate()

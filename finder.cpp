@@ -113,7 +113,7 @@ char *_findLast(char *str, char *delim)
 	return (char *)(str + savedPosition);
 }
 
-char *getCodePage(const char *str)
+char getCodePage(const char *str)
 {
 	char cdpg[32] = {0};
 	char *ptr1 = strstri(str, "charset=");
@@ -3566,8 +3566,11 @@ int Lexems::filler(char* ip, char *ipRaw, int port, std::string *buffcpy, int si
 
 		const std::string &location = handleRedirects(buffcpy, ip, port);
 
-		char cp[32] = { 0 };
-		strncpy(cp, getCodePage(buffcpy->c_str()), 32);
+        char cp[32] = { 0 };
+        //int codePageSize = sizeof(getCodePage(buffcpy->c_str()));
+        char codePage = getCodePage(buffcpy->c_str());
+        char *codePagePtr = &codePage;
+        strncpy(cp, codePagePtr, 32);
 		int flag = contentFilter((const std::string *) buffcpy, port, (location.size() > 0 ? location.c_str() : ip), cp, size);
 		if (flag != -1) {
 			const std::string &header = getHeader((const std::string *) buffcpy, flag);

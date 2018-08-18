@@ -1000,10 +1000,9 @@ void MainStarter::startIPScan(){
 
 						   unsigned long long curIP = i;
 						   while (curIP <= ip2) {
-							   tAddr.s_addr = ntohl(curIP);
+                               tAddr.s_addr = ntohl(curIP);
 							   ipVec.push_back(inet_ntoa(tAddr));
-
-							   curIP += (long long)limit;
+                               curIP += (long long)limit;
 						   }
 
 						   std::random_shuffle(ipVec.begin(), ipVec.end());

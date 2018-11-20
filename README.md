@@ -29,7 +29,7 @@ sudo apt-get install qtmultimedia5-dev libqt5multimediawidgets5 libqt5multimedia
 Сборка:
 
 ```
-git clone https://github.com/netstalking-core/nesca.git
+git clone https://github.com/S0Ulle33/nesca.git
 qmake
 make
 ```

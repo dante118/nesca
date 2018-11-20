@@ -1,8 +1,8 @@
 Nesca
-----
+=====
 Сканер сети. Легендарный. Твой.
 
-![Nesca](examples/old_nesca.png)
+![Nesca](images/old_nesca.png)
 
 ### История возникновения
 

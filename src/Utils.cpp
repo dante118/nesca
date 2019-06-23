@@ -6,26 +6,6 @@ std::string Utils::startDate;
 std::string Utils::startTime;
 std::string Utils::currentTarget;
 
-//void Utils::emitScaryError() {
-//	__asm{
-//		push   edx
-//			push   ecx
-//			push   ebx
-//
-//			mov    eax, 'VMXh'
-//			mov    ebx, 0
-//			mov    ecx, 10
-//			mov    edx, 'VX'
-//
-//			in     eax, dx
-//			cmp    ebx, 'VMXh'
-//
-//			pop    ebx
-//			pop    ecx
-//			pop    edx
-//	};
-//}
-
 std::string Utils::getHeaderValue(std::string *buff, const std::string headerValue, const std::string outputName) {
 	if (buff->size() > 0) {
 		int headerSize = headerValue.size();

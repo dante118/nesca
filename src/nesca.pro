@@ -1,36 +1,25 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2015-02-24T13:25:33
-#
-#-------------------------------------------------
-
-QT       += core gui multimedia
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += core gui multimedia widgets
 
 CONFIG += c++11
 QMAKE_CFLAGS += -Wno-write-strings 
 QMAKE_CXXFLAGS += -Wno-write-strings -Wno-narrowing -fpermissive
 
 TARGET = nesca
+RC_ICONS = nesca.ico
 TEMPLATE = app
-#INCLUDEPATH += /opt/Qt5.3.2/5.3/gcc_64/include/QtWidgets/
 SOURCES +=\
-        main.cpp \
+    main.cpp \
     nesca_3.cpp \
     ActivityDrawerTh_HorNet.cpp \
     base64.cpp \
-    CheckKey_Th.cpp \
     DrawerTh_GridQoSScanner.cpp \
     DrawerTh_HorNet.cpp \
     DrawerTh_ME2Scanner.cpp \
     DrawerTh_QoSScanner.cpp \
     DrawerTh_VoiceScanner.cpp \
-    msgcheckerthread.cpp \
     piestat.cpp \
     progressbardrawer.cpp \
     STh.cpp \
-    vercheckerthread.cpp \
     finder.cpp \
     WebformWorker.cpp \
     Connector.cpp \
@@ -52,7 +41,6 @@ SOURCES +=\
 HEADERS  += nesca_3.h \
     ActivityDrawerTh_HorNet.h \
     base64.h \
-    CheckKey_Th.h \
     DrawerTh_GridQoSScanner.h \
     DrawerTh_HorNet.h \
     DrawerTh_ME2Scanner.h \
@@ -61,12 +49,10 @@ HEADERS  += nesca_3.h \
     externData.h \
     externFunctions.h \
     mainResources.h \
-    msgcheckerthread.h \
     piestat.h \
     progressbardrawer.h \
     resource.h \
     STh.h \
-    vercheckerthread.h \
     Utils.h \
     WebformWorker.h \
     Connector.h \
@@ -91,9 +77,35 @@ RESOURCES += \
 OTHER_FILES += \
     nesca_3.rc
 
+win32: LIBS += -lws2_32
 
-unix|win32: LIBS += -lssh
 
-unix|win32: LIBS += -lcrypto
+win32: LIBS += -L$$PWD/3rdparty/curl_x86-windows/lib/ -llibcurl_imp
 
-unix|win32: LIBS += -lcurl
+INCLUDEPATH += $$PWD/3rdparty/curl_x86-windows/include
+DEPENDPATH += $$PWD/3rdparty/curl_x86-windows/include
+
+win32: LIBS += -L$$PWD/3rdparty/hikvision/lib/ -lHCNetSDK
+
+INCLUDEPATH += $$PWD/3rdparty/hikvision/include
+DEPENDPATH += $$PWD/3rdparty/hikvision/include
+
+win32: LIBS += -L$$PWD/3rdparty/libssh_x86-windows/lib/ -lssh
+
+INCLUDEPATH += $$PWD/3rdparty/libssh_x86-windows/include
+DEPENDPATH += $$PWD/3rdparty/libssh_x86-windows/include
+
+win32: LIBS += -L$$PWD/3rdparty/openssl-windows_x86-windows/lib/ -llibeay32
+
+INCLUDEPATH += $$PWD/3rdparty/openssl-windows_x86-windows/include
+DEPENDPATH += $$PWD/3rdparty/openssl-windows_x86-windows/include
+
+win32: LIBS += -L$$PWD/3rdparty/openssl-windows_x86-windows/lib/ -lssleay32
+
+INCLUDEPATH += $$PWD/3rdparty/openssl-windows_x86-windows/include
+DEPENDPATH += $$PWD/3rdparty/openssl-windows_x86-windows/include
+
+win32: LIBS += -L$$PWD/3rdparty/zlib_x86-windows/lib/ -lzlib
+
+INCLUDEPATH += $$PWD/3rdparty/zlib_x86-windows/include
+DEPENDPATH += $$PWD/3rdparty/zlib_x86-windows/include

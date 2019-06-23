@@ -35,7 +35,7 @@ int MakePolygonLine(int gWidth)
 		fact7 = 0;
 
 	bool state = stt->isRunning();
-	int activityVal = log(1 + Activity)/3 + 2;
+    int activityVal = (1 + Activity)/3 + 2;
 	for(int i = 1; i < 136; ++i)
 	{
         x = qrand() % 4 + i;

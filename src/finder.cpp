@@ -1,19 +1,23 @@
-﻿#include "HikvisionLogin.h"
-#include "STh.h"
-#include "mainResources.h"	
-#include "externFunctions.h"
-#include "externData.h"
-#include "WebformWorker.h"
-#include "Connector.h"
-#include "BasicAuth.h"
-#include "FTPAuth.h"
-#include "SSHAuth.h"
-#include <memory>
-#include "FileUpdater.h"
-#include "IPCAuth.h"
+﻿#include "memory"
+#include "regex"
+#include "string"
+
 #include <qjsonobject.h>
-#include "RTSP.h"
+
+#include "BasicAuth.h"
+#include "Connector.h"
+#include "externData.h"
+#include "externFunctions.h"
+#include "FileUpdater.h"
+#include "FTPAuth.h"
+#include "HikvisionLogin.h"
+#include "IPCAuth.h"
+#include "mainResources.h"
 #include "MainStarter.h"
+#include "RTSP.h"
+#include "SSHAuth.h"
+#include "STh.h"
+#include "WebformWorker.h"
 
 #ifndef WIN32
 	#define _cdecl
@@ -22,7 +26,6 @@
 		return errno;
 	}
 #endif
-
 
 extern "C"
 {
@@ -81,7 +84,6 @@ char* strstri(const char *_Str, const char *_SubStr)
     return 0;
 }
 
-bool gGlobalTrackLocked = false;
 char *_findFirst(const char *str, char *delim)
 {
 	int sz = strlen(str);
@@ -113,46 +115,52 @@ char *_findLast(char *str, char *delim)
 	return (char *)(str + savedPosition);
 }
 
-char getCodePage(const char *str)
+std::string getCodePage(const char *str)
 {
+    std::string searchString(str);
+    std::regex httpRe("HTTP.*(\\d{3})");
+    std::regex re("(\\d{3})");
+    std::smatch matches;
+
+    if(std::regex_search(searchString, matches, httpRe)) {
+        return matches[1].str();
+    } else if(std::regex_search(searchString, matches, re)) {
+        return matches[1].str();
+    } else {
+        return "NULL";
+    }
+    /*
 	char cdpg[32] = {0};
 	char *ptr1 = strstri(str, "charset=");
 
-	if (ptr1 != NULL)
-	{
+    if (ptr1 != nullptr) {
 		char *temp3 = _findFirst((char *)(ptr1 + 8), " \"'\n\r");
-		if (temp3 != NULL)
-		{
+        if (temp3 != nullptr) {
 			int ln = (int)(temp3 - ptr1 - 8);
 			if (ln > 16) return "WTF?";
 			strncpy(cdpg, (char *)(ptr1 + 8), (ln > 32) ? 32 : ln);
 			if (strstri(cdpg, "%s") != NULL) return "UTF-8";
 			return cdpg;
 		}
-		else
-		{
+        else {
 			stt->doEmitionRedFoundData("[GetCodePage] [" + QString(temp3).mid(0, 16) + "]");
 			return "NULL";
 		};
 	}
 
 	ptr1 = strstri(str, "<meta ");
-    if(ptr1 != NULL)
-    {
+    if(ptr1 != nullptr) {
         char *ptr2 = strstri(ptr1 + 6, "charset=");
-        if(ptr2 != NULL)
-        {
+        if(ptr2 != nullptr) {
             char *temp4 = _findFirst((char *)(ptr2 + 6), " \"'>\n\r");
-			if(temp4 != NULL)
-			{
+            if(temp4 != nullptr) {
                 int ln = (int)(temp4 - ptr2 - 8);
 				if(ln > 16) return "WTF?";
                 strncpy(cdpg, (char *)(ptr2 + 8), (ln > 32) ? 32 : ln );
-				if(strstri(cdpg, "%s") != NULL) return "UTF-8";
+                if(strstri(cdpg, "%s") != nullptr) return "UTF-8";
 				return cdpg;
 			}
-			else
-			{
+            else {
                 stt->doEmitionRedFoundData("[GetCodePage] [" + QString(ptr2).mid(0, 16) + "]");
                 return "NULL";
 			};
@@ -218,7 +226,7 @@ char getCodePage(const char *str)
 			else return "NULL";
 		};	
 	}
-	else return "NULL";
+    else return "NULL";*/
 }
 
 bool isNegative(const std::string *buff, const char *ip, int port, const char *cp)
@@ -576,216 +584,108 @@ int contentFilter(const std::string *buff, int port, const char *ip, const char 
 	}
 }
 
-void fillGlobalLogData(const char *ip, int port, const char *sz, const char *title,
-                       const char *login, const char *pass, char *comment, char *cdpg, char *clss)
+std::string __checkFileOrCreate(int flag)
 {
-	if(trackerOK == true)
-	{
-		while(gGlobalTrackLocked == true) Sleep(10);
-		gGlobalTrackLocked = true;
-		
-		QJsonObject jsonData; 
+    std::string fileName = "./";
+    std::string currentType;
 
-			if(gMode == 0 || gMode == -1)
-			{
-				if(strlen(ip) > 0) jsonData.insert("ip_addr", QJsonValue(QString(ip)) );
-				else jsonData.insert("ip_addr", QJsonValue(QString("")) );
+    if(flag == 0 || flag == 15 || flag == -10) {
+        fileName += DIR_NAME + Utils::getStartDate() + "_" + Utils::getCurrentTarget() + "/" + TYPE1 +".html";
+        currentType = TYPE1;
+    }
+    else if(flag == 1) {
+        fileName += DIR_NAME + Utils::getStartDate() + "_" + Utils::getCurrentTarget() + "/" + TYPE2 +".html";
+        currentType = TYPE2;
+    }
+    else if(flag == -22) {
+        fileName += DIR_NAME + Utils::getStartDate() + "_" + Utils::getCurrentTarget() + "/" + TYPE5 +".html";
+        currentType = TYPE5;
+    }
+    else if(flag == 3) {
+        fileName += DIR_NAME + Utils::getStartDate() + "_" + Utils::getCurrentTarget() + "/" + TYPE4 +".html";
+        currentType = TYPE4;
+    }
+    else if(flag >= 17 || flag == 11 || flag == 12 || flag == 13 || flag == 14 || flag == 2) {
+        fileName += DIR_NAME + Utils::getStartDate() + "_" + Utils::getCurrentTarget() + "/" + TYPE3 +".html";
+        currentType = TYPE3;
+    }
 
-                jsonData.insert("hostname", QJsonValue(QString("")) );
-			}
-			else
-			{
-				jsonData.insert("ip_addr", QJsonValue(QString("")) );
-				jsonData.insert("hostname", QJsonValue(QString(ip)) );
-			};
-
-			jsonData.insert("port", QJsonValue(QString::number(port)) );
-			jsonData.insert("recv", QJsonValue(QString(sz)));
-			QString tt = QString(base64_encode((const unsigned char *)title, strlen(title)).c_str());
-			if(strlen(title) == 0) jsonData.insert("title", QJsonValue(QString("NULL")) );
-			else jsonData.insert("title", QJsonValue(QString(base64_encode((const unsigned char *)title, strlen(title)).c_str())) );
-			if(strlen(login) > 0) jsonData.insert("login", QJsonValue(QString(login)) );
-			else jsonData.insert("login", QJsonValue(QString("")) );
-			if(strlen(pass) > 0) jsonData.insert("pass", QJsonValue(QString(pass)) );
-			else jsonData.insert("pass", QJsonValue(QString("")) );
-			if(strlen(comment) > 0) jsonData.insert("other", QJsonValue(QString(comment)) );
-			else jsonData.insert("other", QJsonValue(QString("")) );
-			if(strlen(cdpg) > 0) jsonData.insert("encoding", QJsonValue(QString(cdpg)) );
-			else jsonData.insert("encoding", QJsonValue(QString("")) );
-			if(strlen(clss) > 0) jsonData.insert("Class", QJsonValue(QString(clss)) );
-			else jsonData.insert("Class", QJsonValue(QString("")) );
-
-		jsonArr->push_front(jsonData);
-		gGlobalTrackLocked = false;
-	};
-}
-
-int __checkFileExistence(int flag)
-{
-	char fileName[64] = {0};
-
-	if (flag == -22)									sprintf(fileName, "./" DIR_NAME "%s_%s/" TYPE5 ".html", Utils::getStartDate().c_str(), Utils::getCurrentTarget().c_str());
-	else if (flag == 0 || flag == 15 || flag == -10)	sprintf(fileName, "./" DIR_NAME "%s_%s/" TYPE1 ".html", Utils::getStartDate().c_str(), Utils::getCurrentTarget().c_str());
-	else if (flag == 3)									sprintf(fileName, "./" DIR_NAME "%s_%s/" TYPE2 ".html", Utils::getStartDate().c_str(), Utils::getCurrentTarget().c_str());
-	else if (flag == 16)								sprintf(fileName, "./" DIR_NAME "%s_%s/" TYPE4 ".html", Utils::getStartDate().c_str(), Utils::getCurrentTarget().c_str());
-	else if(flag >= 17 || flag == 11 || flag == 12 
-		|| flag == 13 || flag == 14 || flag == 1)		sprintf(fileName, "./" DIR_NAME "%s_%s/" TYPE3 ".html", Utils::getStartDate().c_str(), Utils::getCurrentTarget().c_str());
-
-	FILE *f = fopen(fileName, "r");
-	if(f == NULL) return true;
-	else 
-	{
+    FILE *f = fopen(fileName.c_str(), "r");
+    if(f != nullptr) {
+        fclose(f);
+        return fileName;
+    }
+	else {
 		fclose(f);
-		return false;
-	};
+
+        FILE *file = fopen(fileName.c_str(), "a");
+
+        // Header
+        std::string header;
+        header += "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />""<title>";
+        header += currentType;
+        header += "</title>";
+        header += HTTP_FILE_STYLE;
+        fputs(header.c_str(), file);
+
+        // Delimiter (date and time)
+        std::string delimiter;
+        char cdate[32] = {0};
+        time_t rtime;
+        time(&rtime);
+        strcpy (cdate, "[");
+        strcat (cdate, ctime (&rtime));
+        memset (cdate + strlen(cdate) - 1, '\0', 1);
+        strcat (cdate, "] ");
+        delimiter += "<hr><center><h5><font color=\"#a1a1a1\">";
+        delimiter += cdate;
+        delimiter += "</font></h5></center><hr>";
+        fputs(delimiter.c_str(), file);
+
+        // Navigation
+        fputs(HTTP_FILE_HEADER, file);
+
+        fclose(file);
+        return fileName;
+    }
 }
-bool ftsCameras = true;
-bool ftsOther = true;
-bool ftsSSH = true;
-bool ftsFTP = true;
-bool ftsBA = true;
-std::atomic<bool> fOpened(false);
+
 void fputsf(char *text, int flag)
 {
-	char fileName[256] = { 0 };
+    std::atomic<bool> fOpened(false);
 
-	if(flag == 0 || flag == 15 || flag == -10) 
-	{
-		if (ftsCameras) ftsCameras		= __checkFileExistence(flag);
-		sprintf(fileName, "./" DIR_NAME "%s_%s/" TYPE1 ".html", Utils::getStartDate().c_str(), Utils::getCurrentTarget().c_str());
-	}
-	else if(flag == 1) 
-	{
-		if(ftsOther) ftsOther			= __checkFileExistence(flag);
-		sprintf(fileName, "./" DIR_NAME "%s_%s/" TYPE2 ".html", Utils::getStartDate().c_str(), Utils::getCurrentTarget().c_str());
-	}
-	else if(flag == -22) 
-	{
-		if(ftsSSH) ftsSSH				= __checkFileExistence(flag);
-		sprintf(fileName, "./" DIR_NAME "%s_%s/" TYPE5 ".html", Utils::getStartDate().c_str(), Utils::getCurrentTarget().c_str());
-	}
-	else if(flag == 3) 
-	{
-		if(ftsFTP) ftsFTP				= __checkFileExistence(flag);
-		sprintf(fileName, "./" DIR_NAME "%s_%s/" TYPE4 ".html", Utils::getStartDate().c_str(), Utils::getCurrentTarget().c_str());
-	}
-	else if(flag >= 17 || flag == 11 || flag == 12 
-		|| flag == 13 || flag == 14 || flag == 2
-		) 
-	{
-		if(ftsBA) ftsBA					= __checkFileExistence(flag);
-		sprintf(fileName, "./" DIR_NAME "%s_%s/" TYPE3 ".html", Utils::getStartDate().c_str(), Utils::getCurrentTarget().c_str());
-	}
-	else stt->doEmitionRedFoundData("Unknown flag [FLAG: " + QString::number(flag) + "]");
+    std::string fileName = __checkFileOrCreate(flag);
 
-	FILE *file = fopen(fileName, "a");
+    FILE *file = fopen(fileName.c_str(), "a");
 
-	if(file != NULL)
+    if(file != nullptr)
 	{
-		time_t rtime;
-		time(&rtime);
-		if(horLineFlag == false) 
-		{
-			horLineFlag = true;
-			char delimiter[128] = {0};
-			char cdate[32] = {0};
-			strcpy (cdate, "[");
-			strcat (cdate, ctime (&rtime));
-			memset (cdate + strlen(cdate) - 1, '\0', 1);
-			strcat (cdate, "] ");
-			strcpy(delimiter, "<hr><center><h5><font color=\"#a1a1a1\">");
-			strcat(delimiter, cdate);
-			strcat(delimiter, "</font></h5></center><hr>");
-			fputs (delimiter, file);
-		};
-
 		++saved;
 		char *string = new char[strlen(text) + 512];
 
-		if(flag != -22) 
-		{
+		if(flag != -22) {
 			strcpy (string, "<div id=\"ipd\" style=\"color:#707070;text-decoration: none;\">");
-			
-			char cdate[32] = {0};
-			strcat (cdate, "[");
-			strcat (cdate, ctime (&rtime));
-			memset (cdate + strlen(cdate) - 1, '\0', 1);
-			strcat (cdate, "] ");
-			strcat (string, cdate);
-			strcat (string, text);
-			strcat (string, "</div>");
-		}
-		else
-		{
-			strcpy (string, "<div id=\"ipd\" style=\"color:#707070;\">");
-			
-			char cdate[32] = {0};
-			strcat (cdate, "[");
-			strcat (cdate, ctime (&rtime));
-			memset (cdate + strlen(cdate) - 1, '\0', 1);
-			strcat (cdate, "] ");
-			strcat (string, cdate);
-			strcat (string, text);
-			strcat (string, "</div>");
-		};
+        }
+        else {
+            strcpy (string, "<div id=\"ipd\" style=\"color:#707070;\">");
+        }
+        char cdate[32] = {0};
+        time_t rtime;
+        time(&rtime);
+        strcat (cdate, "[");
+        strcat (cdate, ctime (&rtime));
+        memset (cdate + strlen(cdate) - 1, '\0', 1);
+        strcat (cdate, "] ");
+        strcat (string, cdate);
+        strcat (string, text);
+        strcat (string, "</div>");
 
-		if (flag == 0 && ftsCameras)
-		{
-			char tmsg[1024] = {0};
-			ftsCameras = false;
-			strcpy(tmsg, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" /><title>" TYPE1 "</title>");
-			//strcat(tmsg, msg);
-			strcat(tmsg, HTTP_FILE_STYLE);
-			fputs (tmsg, file);
-			fputs(HTTP_FILE_HEADER, file);
-		};
-		if(flag == 1 && ftsOther)	
-		{
-			char tmsg[1024] = {0};
-			ftsOther = false;
-			strcpy(tmsg, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" /><title>" TYPE2 "</title>");
-			//strcat(tmsg, msg);
-			strcat(tmsg, HTTP_FILE_STYLE);
-			fputs (tmsg, file);
-			fputs(HTTP_FILE_HEADER, file);
-		};
-		if(flag == -22 && ftsSSH)	
-		{
-			char tmsg[1024] = {0};
-			ftsOther = false;
-			strcpy(tmsg, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" /><title>" TYPE5 "</title>");
-			//strcat(tmsg, msg);
-			strcat(tmsg, HTTP_FILE_STYLE);
-			fputs (tmsg, file);
-			fputs(HTTP_FILE_HEADER, file);
-		};
-		if(flag == 3 && ftsFTP)
-		{
-			char tmsg[1024] = {0};
-			ftsFTP = false;
-			strcpy(tmsg, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" /><title>" TYPE4 "</title>");
-			//strcat(tmsg, msg);
-			strcat(tmsg, HTTP_FILE_STYLE);
-			fputs (tmsg, file);
-			fputs(HTTP_FILE_HEADER, file);
-		};
-		if((flag >= 17 || flag == 11 || flag == 12 || flag == 13 || flag == 14 || flag == 2) && ftsBA) 
-		{
-			char tmsg[1024] = {0};
-			ftsBA = false;
-			strcpy(tmsg, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" /><title>" TYPE3 "</title>");
-			//strcat(tmsg, msg);
-			strcat(tmsg, HTTP_FILE_STYLE);
-			fputs (tmsg, file);
-			fputs(HTTP_FILE_HEADER, file);
-		};
- 
 		while(fOpened) {
 			Sleep((rand() % 10 + 60));
 		};
 		fOpened = true;
-		fputs (string, file);
-		fclose (file);
+        fputs(string, file);
+        fclose(file);
 		fOpened = false;
 
 		delete []string;
@@ -847,16 +747,6 @@ void putInFile(int flag, const char *ip, int port, int size, const char *finalst
 	sprintf(log, "<span id=\"hostSpan\"><a href=\"%s\"/><font color=MediumSeaGreen>%s</font></a>;</span> <span id=\"recvSpan\">Received: <font color=SteelBlue>%d</font>",
         ip, ip, size);
 	
-	//Generic camera
-	if(flag == 0 || flag == 15 || flag == -10)
-	{
-		fillGlobalLogData(ip, port, std::to_string(size).c_str(), finalstr, "", "", "", cp,  TYPE1 );
-	}
-	//Other
-	else if(flag == 1)
-	{
-		fillGlobalLogData(ip, port, std::to_string(size).c_str(), finalstr, "", "", "", cp,  TYPE2 );
-	}
 	//Special camera (Hikk, RVI, Safari, etc)
 	if(flag != 6 && flag != 5 && flag != 4)
 	{
@@ -977,383 +867,6 @@ void _specFillerRSTP(const char *ip, int port, const char *finalstr, const char 
 	fputsf(log, flag);
 }
 
-//void _specFillerWF(const char *ip, int port, char *finalstr, char *login, char *pass, int flag)
-//{
-//	char log[512] = {0};
-//	
-//	++PieWF;
-//
-//    sprintf(log, "[WF]:<span id=\"hostSpan\"><a href=\"%s:%s\"><font color=MediumSeaGreen>%s:%s</font></a></span> T: <font color=GoldenRod>%s</font> Pass: <font color=SteelBlue>%s:%s</font>\n",
-//            ip, port, ip, port, finalstr, login, pass);
-//
-//	stt->doEmitionFoundData(QString::fromLocal8Bit(log));
-//
-//    fputsf (log , flag, "Web Form");
-//}
-//void _getFormVal(char *data, char *result, char *key, char *path = NULL)
-//{
-//	char parVal[256] = {0};
-//	int psz = 0;
-//	char *pkeyResult1 = strstr(data, ">");
-//	if(pkeyResult1 != NULL)
-//	{
-//		psz = pkeyResult1 - data + 1;
-//		strncpy(parVal, data, (psz < 256 ? psz : 256));
-//	}
-//	else
-//	{
-//		strncpy(parVal, data, 256);		
-//	};
-//
-//	int sz = 0;
-//	char parVal2[256] = {0};
-//
-//	char startPath[256] = {0};
-//	if(strcmp(key, "action") == 0)
-//	{
-//		if(strstr(path, "./") == NULL)
-//		{
-//			char *ptrP1 = _findLast(path, "/");
-//			if(ptrP1 != path)
-//			{
-//				int pSz = ptrP1 -path;
-//				strncpy(startPath, path, pSz);
-//			};
-//		};
-//	};
-//
-//	char *keyResult1 = strstri(parVal, key);
-//
-//	if(keyResult1 != NULL)
-//	{
-//		char *pkeyResult2 = _findFirst(keyResult1, " >");
-//		if(pkeyResult2 != NULL)
-//		{
-//			int psz2 = pkeyResult2 - keyResult1;
-//			strncpy(parVal2, keyResult1, (psz2 < 256 ? psz2 : 256));
-//
-//			char *keyResult2 = _findFirst(parVal2, "'\"");
-//			if(keyResult2 != NULL)
-//			{
-//				char *keyResult3 = _findFirst(keyResult2 + 1, "'\"> ");
-//				if(keyResult3 != NULL)
-//				{
-//					sz = keyResult3 - keyResult2 - 1;
-//					char tempRes[256] = {0};
-//					if(strstr(keyResult2, "./") != NULL) 
-//					{
-//						strcpy(result, startPath);
-//						strncpy(tempRes, keyResult2 + 2, sz - 1);
-//						if(tempRes[0] != '/') strcat(result, "/");
-//						strcat(result, tempRes);
-//					}
-//					else if(strstr(keyResult2, "/") == NULL)
-//					{
-//						if(strcmp(key, "action") == 0)
-//						{
-//							strcpy(result, startPath);
-//							strncpy(tempRes, keyResult2 + 1, sz);
-//							if(tempRes[0] != '/') strcat(result, "/");
-//							strcat(result, tempRes);
-//						}
-//						else
-//						{
-//							strncpy(result, keyResult2 + 1, sz);							
-//						};
-//					}
-//					else
-//					{
-//						strncpy(result, keyResult2 + 1, sz);
-//					};
-//				};
-//			}
-//			else
-//			{
-//				keyResult2 = _findFirst(parVal2, "=");
-//				if(keyResult2 != NULL)
-//				{
-//					char *keyResult3 = _findFirst(keyResult2, "'\"> ");
-//					if(keyResult3 != NULL )
-//					{
-//						sz = keyResult3 - keyResult2 - 1;
-//						strncpy(result, keyResult2 + 1, sz);
-//						char tempRes[256] = {0};
-//						if(strstr(keyResult2, "./") != NULL) 
-//						{
-//							strcpy(result, startPath);
-//							strncpy(tempRes, keyResult2 + 2, sz - 1);
-//							if(tempRes[0] != '/') strcat(result, "/");
-//							strcat(result, tempRes);
-//						}
-//						else if(strstr(keyResult2, "/") == NULL)
-//						{
-//							if(strcmp(key, "action") == 0)
-//							{
-//								strcpy(result, startPath);
-//								strncpy(tempRes, keyResult2 + 1, sz);
-//								if(tempRes[0] != '/') strcat(result, "/");
-//								strcat(result, tempRes);
-//							}
-//							else
-//							{
-//								strncpy(result, keyResult2 + 1, sz);
-//							};
-//						}
-//						else
-//						{
-//							strncpy(result, keyResult2 + 1, sz);
-//						};
-//					}
-//					else
-//					{
-//						strcpy(result, startPath);
-//						strcat(result, keyResult2 + 1);
-//					};
-//				}
-//			};
-//
-//		}
-//		else
-//		{
-//			stt->doEmitionFoundData("[WF]: GetParam - Cannot retrieve field.");				
-//		};
-//	};
-//}
-//
-//static const std::string arrUser[] = {"user", "usr", "username", "login", "lgn", "account", "acc", "param1", "param3", "id", "A1", "uname", "mail", "name"};
-//std::vector<std::string> vecUser (arrUser, arrUser + sizeof(arrUser) / sizeof(arrUser[0]) );
-//static const std::string arrPass[] = {"pass", "pw", "password", "code", "param2", "param4", "secret", "login_p", "A2", "admin_pw", "pws", "secretkey"};
-//std::vector<std::string> vecPass (arrPass, arrPass + sizeof(arrPass) / sizeof(arrPass[0]) );
-//
-//char *_getAttribute(const char *str, char *attrib)
-//{
-//	if(strstri(str, attrib) != NULL)
-//	{
-//		char res[1024] = {0};
-//		char *ptrStart = strstri(str, attrib);
-//		char *ptrEnd = _findFirst(ptrStart, "\r\n");
-//		if(ptrEnd != NULL)
-//		{
-//			int szAt = strlen(attrib);
-//			int sz = ptrEnd - ptrStart - szAt;
-//
-//			if(sz != 0 && sz < 1024) strncpy(res, ptrStart + szAt, sz);
-//			else return "";
-//
-//			return res;
-//		}
-//		else return "";
-//	}
-//	else return "";
-//}
-//
-//void _getInputVal(std::vector<std::string> inputVec, char *buff, char *key)
-//{
-//	char *pos = NULL;
-//	char field[256] = {0};
-//	if(strcmp(key, "USER") == 0)
-//	{
-//		for(int i = 0; i < inputVec.size(); ++i)
-//		{
-//			ZeroMemory(field, 256);
-//			_getFormVal((char*)inputVec[i].data(), field, "name=");
-//			for(int j = 0; j < vecUser.size(); ++j)
-//			{
-//				pos = strstri(field, vecUser[j].data());
-//				if(pos != NULL)
-//				{
-//					strncpy(buff, field, 256);
-//					return;
-//				};
-//			};
-//		};
-//	}
-//	else
-//	{
-//		for(int i = 0; i < inputVec.size(); ++i)
-//		{
-//			ZeroMemory(field, 256);
-//			_getFormVal((char*)inputVec[i].data(), field, "name=");
-//			for(int j = 0; j < vecPass.size(); ++j)
-//			{
-//				pos = strstri(field, vecPass[j].data());
-//				if(pos != NULL)
-//				{
-//					strncpy(buff, field, 256);
-//					return;
-//				};
-//			};
-//		};
-//	};
-//}
-//
-//void _specWFBrute(const char *ip, int port, const char *buff, int flag, char *path, char *comment, char *tclass, char *cp, int size, char *title)
-//{
-//	if(strstr(buff, "VER_CODE") != NULL || strstri(buff, "captcha") != NULL)
-//	{
-//		if(gNegDebugMode)
-//		{
-//			stt->doEmitionDebugFoundData("[<a href=\"" + QString(ip) + ":" + QString::number(port) + "\"><font color=\"#0084ff\">" + QString(ip) + ":" + QString::number(port) + "</font></a>" + "] Ignoring: Captcha detected.");
-//		};
-//		return;
-//    };
-//
-//	char methodVal[128] = {0};
-//	char actionVal[512] = {0};
-//	char userVal[128] = {0};
-//	char passVal[128] = {0};
-//	char frmBlock[4096] = {0};
-//	char *fBlock = strstri(buff, "<form ");
-//	char formVal[128] = {0};
-//	int fbsz = 0;
-//
-//	std::vector<std::string> inputVec;
-//	if(fBlock != NULL)
-//	{
-//		char *fBlock2 = strstri(fBlock, ">");
-//		int szfb2 = fBlock2 - fBlock;
-//		strncpy(formVal, fBlock, (szfb2 < 128 ? szfb2 : 128));
-//		char *frmBlockEnd = strstri(fBlock, "</form>");
-//		if(frmBlockEnd != NULL)
-//		{
-//			fbsz = frmBlockEnd - fBlock;
-//			strncpy(frmBlock, fBlock, (fbsz < 4096 ? fbsz : 4096));
-//		}
-//		else
-//		{
-//			strncpy(frmBlock, fBlock, 4096);			
-//		};
-//
-//		_getFormVal(frmBlock, methodVal, "method");
-//		_getFormVal(frmBlock, actionVal, "action", path);
-//		if(actionVal[0] == '.')
-//		{
-//			char tmpBuff[512] = {0};
-//			char *tempPtr1 = _findLast(path, "/");
-//			int sz = tempPtr1 - path;
-//			if(sz > 0)
-//			{
-//				strncpy(tmpBuff, path, sz);
-//				strncat(tmpBuff, actionVal + 1, strlen(actionVal) - 1);
-//				ZeroMemory(actionVal, sizeof(actionVal));
-//				strcpy(actionVal, tmpBuff);
-//			};
-//		};
-//
-//		char *inptPtr1 = strstri(frmBlock, "<input ");
-//		int insz = 0;
-//		char *inptPtrEnd = NULL;
-//		char tempInptStr[256] = {0};
-//		while(inptPtr1 != NULL)
-//		{
-//			inptPtrEnd = strstr(inptPtr1, ">");
-//			if(inptPtrEnd != NULL)
-//			{
-//				ZeroMemory(tempInptStr, 256);
-//				insz = inptPtrEnd - inptPtr1 + 1;
-//				strncpy(tempInptStr, inptPtr1, (insz < 256 ? insz : 256));
-//				inputVec.push_back(std::string(tempInptStr));
-//				inptPtr1 = strstri(inptPtrEnd, "<input ");
-//			}
-//			else break;
-//		};
-//
-//		if(inputVec.size() != 0)
-//		{
-//			_getInputVal(inputVec, userVal, "USER");
-//			_getInputVal(inputVec, passVal, "PASS");
-//		}
-//		else
-//		{
-//			if(gNegDebugMode) stt->doEmitionFoundData("<a href=\"" + QString(ip) + ":" + QString::number(port) + "\"><font color=\"#c3c3c3\">" + QString(ip) + ":" + QString::number(port) + "</font></a> - [WF]: No text/password fields found.");							
-//            ///fillGlobalLogData(ip, tport, std::to_string(size).c_str(), title, "NULL", "NULL", comment, cp, tclass);
-//            ///putInFile(flag, ip, tport, size, title, cp);
-//		};
-//	}
-//	else
-//	{
-//		stt->doEmitionFoundData("<a href=\"" + QString(ip) + ":" + QString::number(port) + "\"><font color=\"#c3c3c3\">" + QString(ip) + ":" + QString::number(port) + "</font></a> - [WF]: Cannot find form block.");
-//        fillGlobalLogData(ip, port, std::to_string(size).c_str(), title, "NULL", "NULL", comment, cp, tclass);
-//        putInFile(flag, ip, port, size, title, cp);
-//	};
-//	
-//	if(strlen(methodVal) == 0)
-//	{
-//		strcpy(methodVal, "GET");
-//	};
-//	if(strlen(actionVal) == 0)
-//	{
-//		strcpy(actionVal, "/");
-//	}
-//	else
-//	{
-//		if(strstri(actionVal, "http") != NULL)
-//		{
-//			char tmp[128] = {0};
-//			strncpy(tmp, actionVal, 128);
-//			if(strstr(tmp, "//") != NULL)
-//			{
-//				char *tmp1 = strstr(tmp, "//");
-//				char *tmp2 = strstr(tmp1 + 2, "/");
-//				ZeroMemory(actionVal, 128);
-//				if(tmp2 != NULL)
-//				{
-//					strncpy(actionVal, tmp2, strlen(tmp2));
-//				}
-//				else
-//				{
-//					strcpy(actionVal, "/");				
-//				};
-//			}
-//			else if(strstr(tmp, "%2f%2f") != NULL)
-//			{
-//				char *tmp1 = strstr(tmp, "%2f%2f");
-//				char *tmp2 = strstr(tmp1 + 6, "%2f");
-//				ZeroMemory(actionVal, 128);
-//				if(tmp2 != NULL)
-//				{
-//					strcpy(actionVal, "/");
-//					strncpy(actionVal, tmp2 + 3, strlen(tmp2) - 3);
-//				}
-//				else
-//				{
-//					strcpy(actionVal, "/");				
-//				};
-//			};			
-//		};
-//		if(actionVal[0] != '/')
-//		{
-//			char temp[128] = {0};
-//			strncpy(temp, actionVal, 128);
-//			strcpy(actionVal, "/");
-//			strncat(actionVal, temp, strlen(temp));
-//		};
-//	};
-//
-//	if(inputVec.size() > 0)
-//	{
-//		if(strlen(userVal) != 0 && strlen(passVal) != 0)
-//        {
-//            WFClass WFC;
-//            lopaStr lps = WFC._WFBrute(ip, port, methodVal, actionVal, userVal, passVal, formVal);
-//
-//			if(strstr(lps.login, "UNKNOWN") == NULL && strlen(lps.other) == 0) 
-//			{
-//                _specFillerWF(ip, port, title, lps.login, lps.pass, flag);
-//		
-//                fillGlobalLogData(ip, port, std::to_string(size).c_str(), title, lps.login, lps.pass, comment, cp, tclass);
-//                putInFile(flag, ip, port, size, title, cp);
-//			};
-//		}
-//		else
-//		{
-//            if(gNegDebugMode) stt->doEmitionFoundData("<a href=\"" + QString(ip) + ":" + QString::number(port) +
-//                                                      "\"><font color=\"#c3c3c3\">" + QString(ip) + ":" + QString::number(port) +
-//                                                      "</font></a> - [WF]: Cannot find user/pass field.");
-//		};
-//    };
-//}
-
 void _specWEBIPCAMBrute(const char *ip, int port, char *finalstr, int flag, char *comment, char *cp, int size, char *SPEC, std::string *cookie)
 {
 	IPC ipc;
@@ -1362,8 +875,6 @@ void _specWEBIPCAMBrute(const char *ip, int port, char *finalstr, int flag, char
 	if(strstr(lps.login, "UNKNOWN") == NULL && strlen(lps.other) == 0) 
 	{
 		_specFillerCustom(ip, port, finalstr, lps.login, lps.pass, flag, "[WIC]");
-
-		//fillGlobalLogData(ip, port, std::to_string(size).c_str(), finalstr, lps.login, lps.pass, comment, cp, "Basic Authorization");
 	};
 }
 
@@ -1388,7 +899,6 @@ int _specBrute(const char *ip, int port,
 			_specFillerCustom(ip, port, finalstr, lps.login, lps.pass, flag, "[WF]");
 		}
 		return 0;
-        //fillGlobalLogData(ip, port, std::to_string(size).c_str(), finalstr, lps.login, lps.pass, "", cp, "Basic Authorization");
 	};
 
 	return 1;
@@ -1410,8 +920,7 @@ int _specRTSPBrute(const char *ip, int port,
 	{
 		char title[512] = { 0 };
 		sprintf(title, "%s %s", lps.other, finalstr);
-		_specFillerRSTP(ip, port, title, lps.login, lps.pass, flag);
-		//fillGlobalLogData(ip, port, std::to_string(size).c_str(), finalstr, lps.login, lps.pass, "", cp, "RTSP");
+        _specFillerRSTP(ip, port, title, lps.login, lps.pass, flag);
 	};
 }
 
@@ -1560,7 +1069,6 @@ void _saveSSH(const char *ip, int port, int size, const char *buffcpy)
 			const char *ptrl2 = strstr(buffcpy, "@");
 			lpsz = ptrl2 - ptrl1;
 			strncpy(passSSH, ptrl1 + 1, lpsz);
-			fillGlobalLogData(ip, port, std::to_string(size).c_str(), "[SSH service]", loginSSH, passSSH, "NULL", "UTF-8", "SSH");
 			stt->doEmitionFoundData(QString::fromLocal8Bit(logEmit));
 		}
 		else
@@ -2997,8 +2505,6 @@ void parseFlag(int flag, char* ip, char *ipRaw, int port, std::string *buff, con
 
 				fputsf(log, flag);
 
-				fillGlobalLogData(ip, port, std::to_string(size).c_str(), "[FTP service]", lps.login, lps.pass, "NULL", cp, "FTP");
-
 				stt->doEmitionFoundData(QString::fromLocal8Bit(logEmit));
 			}
 			else if (strstr(lps.other, "ROUTER") != NULL)
@@ -3011,8 +2517,6 @@ void parseFlag(int flag, char* ip, char *ipRaw, int port, std::string *buff, con
 					lps.login, lps.pass, ip, lps.login, lps.pass, ip, ip);
 
 				fputsf(log, flag);
-
-				fillGlobalLogData(ip, port, std::to_string(size).c_str(), "[FTP service]", lps.login, lps.pass, "Router FTP.", cp, "FTP");
 
 				stt->doEmitionFoundData(QString::fromLocal8Bit(logEmit));
 			}
@@ -3037,8 +2541,7 @@ void parseFlag(int flag, char* ip, char *ipRaw, int port, std::string *buff, con
 		lopaStr lps = hv.HVLobby(ip, port);
 		if (strstr(lps.login, "UNKNOWN") == NULL && strlen(lps.other) == 0)
 		{
-			_specFillerCustom(ip, port, "[Hikvision IVMS]", lps.login, lps.pass, 0, "[SVC]");
-			//fillGlobalLogData(ip, port, std::to_string(size).c_str(), "[Hikvision IVMS] ()",
+            _specFillerCustom(ip, port, "[Hikvision IVMS]", lps.login, lps.pass, 0, "[SVC]");
 			//	lps.login, lps.pass, "[Hikvision IVMS]", "UTF-8", "Basic Authorization");
 
 			while (hikkaStop) Sleep(10);
@@ -3071,9 +2574,7 @@ void parseFlag(int flag, char* ip, char *ipRaw, int port, std::string *buff, con
 		lopaStr lps = hv.RVILobby(ip, port);
 		if (strstr(lps.login, "UNKNOWN") == NULL && strlen(lps.other) == 0)
 		{
-			_specFillerCustom(ip, port, "[RVI]", lps.login, lps.pass, 0, "[SVC]");
-			/*fillGlobalLogData(ip, port, std::to_string(size).c_str(), "[RVI] ()",
-				lps.login, lps.pass, "[RVI]", "UTF-8", "Basic Authorization");*/
+            _specFillerCustom(ip, port, "[RVI]", lps.login, lps.pass, 0, "[SVC]");
 
 			while (rviStop) Sleep(10);
 			rviStop = true;
@@ -3375,7 +2876,6 @@ void parseFlag(int flag, char* ip, char *ipRaw, int port, std::string *buff, con
 		sprintf(log, "[HFS]:<a href=\"%s:%d/\"><span style=\"color: #a1a1a1;\">%s:%d</span></a><font color=\"#0084ff\"> T: </font><font color=\"#ff9600\">%s Pass: %s:%s</font>",
 			ip, port, ip, port, header.c_str(), lps.login, lps.pass);
 
-		fillGlobalLogData(ip, port, std::to_string(size).c_str(), header.c_str(), lps.login, lps.pass, "HFS-FTP", cp, "Basic Authorization");
 		fputsf(log, flag);
 		stt->doEmitionFoundData(QString::fromLocal8Bit(log));
 	}
@@ -3566,21 +3066,22 @@ int Lexems::filler(char* ip, char *ipRaw, int port, std::string *buffcpy, int si
 
 		const std::string &location = handleRedirects(buffcpy, ip, port);
 
-        char cp[32] = { 0 };
+        //char cp[32] = { 0 };
         //int codePageSize = sizeof(getCodePage(buffcpy->c_str()));
-        char codePage = getCodePage(buffcpy->c_str());
-        char *codePagePtr = &codePage;
-        strncpy(cp, codePagePtr, 32);
-		int flag = contentFilter((const std::string *) buffcpy, port, (location.size() > 0 ? location.c_str() : ip), cp, size);
+        //char codePage = getCodePage(buffcpy->c_str());
+        //char *codePagePtr = &codePage;
+        //strncpy(cp, codePagePtr, 32);
+        std::string cp = getCodePage(buffcpy->c_str());
+        int flag = contentFilter((const std::string *) buffcpy, port, (location.size() > 0 ? location.c_str() : ip), cp.c_str(), size);
 		if (flag != -1) {
 			const std::string &header = getHeader((const std::string *) buffcpy, flag);
 			if (flag < 2 || flag > 6) {
-				if ((flag = handleFramesets(buffcpy, (location.size() > 0 ? (char*)location.c_str() : ip), ipRaw, port, flag, cp)) == -1) {
+                if ((flag = handleFramesets(buffcpy, (location.size() > 0 ? (char*)location.c_str() : ip), ipRaw, port, flag, cp.c_str())) == -1) {
 					return -1;
 				}
 			}
 			else {
-				parseFlag(flag, (location.size() > 0 ? (char*)location.c_str() : ip), ipRaw, port, buffcpy, header, cp);
+                parseFlag(flag, (location.size() > 0 ? (char*)location.c_str() : ip), ipRaw, port, buffcpy, header, cp.c_str());
 			}
 			return flag;
 		}

@@ -1,10 +1,7 @@
 ﻿#include "nesca_3.h"
 #include <QFileDialog>
-#include "CheckKey_Th.h"
 #include "DrawerTh_QoSScanner.h"
 #include "STh.h"
-#include "msgcheckerthread.h"
-#include "vercheckerthread.h"
 #include "DrawerTh_HorNet.h"
 #include "ActivityDrawerTh_HorNet.h"
 #include "DrawerTh_GridQoSScanner.h"
@@ -63,28 +60,17 @@ bool smBit_6 = false;
 bool smBit_7 = false;
 bool smBit_8 = false;
 char gVER[32] = {0};
-int globalPinger = 0;
 int nesca_3::savedTabIndex = 0;
 
 bool startFlag = false;
-bool trackerOK = false;
-char trcPort[32] = {0};
-char trcSrvPortLine[32] = {0};
-char trcProxy[128] = {0};
-char trcSrv[256] = {0};
-char trcScr[256] = {0};
-char trcPersKey[64] = {0};
 char gProxyIP[64] = {0};
 char gProxyPort[8] = {0};
 
-VerCheckerThread *vct = new VerCheckerThread();
-MSGCheckerThread *mct = new MSGCheckerThread();
 STh *stt = new STh();
 DrawerTh_HorNet *dtHN = new DrawerTh_HorNet();
 DrawerTh_ME2Scanner *dtME2 = new DrawerTh_ME2Scanner();
 DrawerTh_QoSScanner *dtQoS = new DrawerTh_QoSScanner();
 DrawerTh_GridQoSScanner *dtGridQoS = new DrawerTh_GridQoSScanner();
-CheckKey_Th *chKTh = new CheckKey_Th();
 ActivityDrawerTh_HorNet *adtHN = new ActivityDrawerTh_HorNet();
 DrawerTh_VoiceScanner *vsTh = new DrawerTh_VoiceScanner();
 PieStat *psTh = new PieStat();
@@ -100,7 +86,6 @@ QGraphicsScene *sceneActivity;
 QGraphicsScene *sceneActivityGrid;
 QGraphicsScene *sceneTextPlacer;
 QGraphicsScene *sceneVoice;
-QGraphicsScene *jobRangeVisualScene;
 
 QString importFileName = "";
 	
@@ -159,10 +144,6 @@ int PekoWidget::m_windowCounter = 0;
 int PekoWidget::offset = 0;
 
 void _LoadPersInfoToLocalVars(int savedTabIndex) {
-	//ZeroMemory(trcPersKey, sizeof(trcPersKey));
-    //trcPersKey[0] = 0;
-    //strncpy(trcPersKey, ui->linePersKey->text().toLocal8Bit().data(), 32);
-    //memset(trcPersKey + 32, '\0', 1);
 	currentIP[0] = 0;
 	finalIP[0] = 0;
 	gPorts[0] = 0;
@@ -219,16 +200,6 @@ void _LoadPersInfoToLocalVars(int savedTabIndex) {
 		strncpy(gPorts, ("-p" + ui->importPortLine->text()).toLocal8Bit().data(), 65536);
 		gPorts[ui->importPortLine->text().length() + 2] = '\0';
 	};
-
-    /*strcpy(trcSrv, ui->lineTrackerSrv->text().toLocal8Bit().data());
-    strcpy(trcScr, ui->lineTrackerScr->text().toLocal8Bit().data());
-    strncpy(trcPersKey, ui->linePersKey->text().toLocal8Bit().data(), 32);
-    memset(trcPersKey + 32, '\0', 1);
-    strcpy(trcSrvPortLine, ui->trcSrvPortLine->text().toLocal8Bit().data());
-	strncpy(gProxyIP, ui->systemProxyIP->text().toLocal8Bit().data(), 64);
-	gProxyIP[ui->systemProxyIP->text().size()] = '\0';
-	strncpy(gProxyPort, ui->systemProxyPort->text().toLocal8Bit().data(), 8);
-    gProxyPort[ui->systemProxyPort->text().size()] = '\0';*/
 }
 
 Ui::nesca_3Class *ui = new Ui::nesca_3Class;
@@ -342,8 +313,7 @@ void setSceneArea()
 	sceneActivity = new QGraphicsScene();
 	sceneActivityGrid = new QGraphicsScene();
 	sceneTextPlacer = new QGraphicsScene();
-	sceneVoice = new QGraphicsScene();
-	jobRangeVisualScene = new QGraphicsScene();
+    sceneVoice = new QGraphicsScene();
 
 	ui->graphicLog->setScene(sceneGrid);
 	ui->graphicLog_2->setScene(sceneGraph);
@@ -352,8 +322,7 @@ void setSceneArea()
 	ui->graphicActivity->setScene(sceneActivity);
 	ui->graphicActivityGrid->setScene(sceneActivityGrid);
 	ui->graphicTextPlacer->setScene(sceneTextPlacer);
-	ui->graphicsVoice->setScene(sceneVoice);
-	ui->jobRangeVisual->setScene(jobRangeVisualScene);
+    ui->graphicsVoice->setScene(sceneVoice);
 	
 	ui->graphicLog->setSceneRect(0, 0, ui->graphicLog->width(), ui->graphicLog->height());
 	ui->graphicLog_2->setSceneRect(0, 0, ui->graphicLog_2->width(), ui->graphicLog_2->height());
@@ -363,7 +332,7 @@ void setSceneArea()
 	ui->graphicActivityGrid->setSceneRect(0, 0, ui->graphicActivityGrid->width(), ui->graphicActivityGrid->height());
 	ui->graphicTextPlacer->setSceneRect(0, 0, ui->graphicTextPlacer->width(), ui->graphicTextPlacer->height());
 	ui->graphicsVoice->setSceneRect(0, 0, ui->graphicsVoice->width(), ui->graphicsVoice->height());
-	ui->jobRangeVisual->setSceneRect(0, 0, ui->jobRangeVisual->width(), ui->jobRangeVisual->height());
+
 
 
 	testScene = new QGraphicsScene();
@@ -581,7 +550,6 @@ void SetValidators()
 	ui->maxBrutingThrBox->setValidator(validator);
 
 	validator = new QRegExpValidator(QRegExp("\\d{1,5}"), NULL);
-	ui->PingTO->setValidator(validator);
 	ui->threadDelayBox->setValidator(validator);
 	
 	validator = new QRegExpValidator(QRegExp("(\\w|-|\\.|\\[|\\]|\\\\)+"), NULL);
@@ -589,9 +557,6 @@ void SetValidators()
 
 	validator = new QRegExpValidator(QRegExp("(\\w|-|\\.)+((\\w|-|\\.)+)+"), NULL);
 	ui->lineILVL->setValidator(validator);
-
-    //validator = new QRegExpValidator(QRegExp("\\d{1,5}"), NULL);
-    //ui->trcSrvPortLine->setValidator(validator);
 	
     //validator = new QRegExpValidator(QRegExp("[a-zA-Z0-9]{32}"), NULL);
     //ui->linePersKey->setValidator(validator);
@@ -1325,21 +1290,6 @@ void nesca_3::slotTabChanged(int index){
 	if(index <= 2) savedTabIndex = index;
 }
 
-void nesca_3::switchToJobMode()
-{
-	if(ui->widgetJOB->geometry().x() == 500)
-	{
-		widgetIsHidden = false;
-		ui->widgetJOB->setGeometry(QRect(1, 44, 498, 730));
-		ui->JobModeBut->setStyleSheet("background-color: rgba(2, 2, 2, 0);border: 1px solid rgba(0, 214, 0, 40);color: rgb(0, 214, 0);");
-	}
-	else
-	{
-		ui->widgetJOB->setGeometry(QRect(500, 44, 500, 730));
-		ui->JobModeBut->setStyleSheet("color: rgb(216, 216, 216);background-color: rgba(2, 2, 2, 0);border: 1px solid rgba(255, 255, 255, 40);");
-	};
-}
-
 void copyToClipboardLocation() {
 	//ui->currentDirectoryLine->selectAll();
 	//QClipboard *c = QApplication::clipboard();
@@ -1996,12 +1946,6 @@ void nesca_3::slotRestoreDefPorts()
 	else if (ci == 2) ui->importPortLine->setText(PORTSET);
 }
 
-void nesca_3::changeNSTrackLabel(bool status)
-{
-	if(status) ui->NSTrackStatusLabel->setStyleSheet("background-color: green; border: 1px solid white;");
-	else ui->NSTrackStatusLabel->setStyleSheet("background-color: black; border: 1px solid white;");
-}
-
 void nesca_3::onLinkClicked(QUrl link)
 {
 	QString lnk = link.toString();
@@ -2168,9 +2112,7 @@ void nesca_3::ConnectEvrthng()
 	connect ( ui->secretMessageBut_8, SIGNAL( clicked() ), this, SLOT( smReaction() ) );
 	connect ( ui->dataText, SIGNAL( anchorClicked(QUrl) ), this, SLOT( onLinkClicked(QUrl) ) );
 	connect ( ui->DataflowModeBut, SIGNAL( clicked() ), this, SLOT( slotShowDataflow() ) );
-	connect ( ui->JobModeBut, SIGNAL( clicked() ), this, SLOT( switchToJobMode() ) );
 	connect ( ui->clearLogBut, SIGNAL( clicked() ), this, SLOT( slotClearLogs() ) );
-	connect ( mct, SIGNAL(showNewMsg(QString)), this, SLOT(slotShowServerMsg(QString)));
 	connect ( tray, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this,SLOT(trayButtonClicked()));
 	connect ( ui->exitButton, SIGNAL( clicked() ), this, SLOT( exitButtonClicked() ) );
 	connect ( ui->trayButton, SIGNAL( clicked() ), this, SLOT( trayButtonClicked() ) );
@@ -2178,13 +2120,12 @@ void nesca_3::ConnectEvrthng()
 	connect ( ui->importButton, SIGNAL( clicked() ), this, SLOT( importAndScan() ) );
 	connect ( ui->startScanButton_3, SIGNAL( clicked() ), this, SLOT( startScanButtonClicked() ) );
 	connect ( ui->startScanButton_4, SIGNAL( clicked() ), this, SLOT( startScanButtonClickedDNS() ) );
-	connect ( ui->shuffle_onoff, SIGNAL(toggled(bool)), this, SLOT(ChangeShuffle(bool)));
-	connect ( ui->trackerOnOff, SIGNAL(toggled(bool)), this, SLOT(ChangeTrackerOK(bool)));
+    connect ( ui->shuffle_onoff, SIGNAL(toggled(bool)), this, SLOT(ChangeShuffle(bool)));
+    connect ( ui->debug_onoff, SIGNAL(toggled(bool)), this, SLOT(ChangeDebug(bool)));
 	connect ( ui->importThreads, SIGNAL( textChanged(QString) ), this, SLOT( ChangeLabelThreads_ValueChanged(QString) ) );
 	connect(ui->threadLine, SIGNAL(textChanged(QString)), this, SLOT(ChangeLabelThreads_ValueChanged(QString)));
 	connect(ui->lineILVL, SIGNAL(textChanged(QString)), this, SLOT(saveTLD(QString)));
 	
-	connect ( ui->PingTO, SIGNAL( textChanged(QString) ), this, SLOT( PingTO_ChangeValue(QString) ) );
 	connect ( ui->threadDelayBox, SIGNAL( textChanged(QString) ), this, SLOT( ThreadDelay_ChangeValue(QString) ) );
 	connect ( ui->maxBrutingThrBox, SIGNAL( textChanged(QString) ), this, SLOT( MaxBrutingThr_ChangeValue(QString) ) );
 	connect ( ui->lineEditThread, SIGNAL( textChanged(QString) ), this, SLOT( ChangeLabelThreads_ValueChanged(QString) ) );
@@ -2194,7 +2135,7 @@ void nesca_3::ConnectEvrthng()
 	connect ( ui->restoreDefaultPorts1, SIGNAL( clicked() ), this, SLOT( slotRestoreDefPorts() ) );
 	connect ( ui->restoreDefaultPorts2, SIGNAL( clicked() ), this, SLOT( slotRestoreDefPorts() ) );
 	connect ( ui->restoreDefaultPorts3, SIGNAL( clicked() ), this, SLOT( slotRestoreDefPorts() ) );
-    connect ( ui->dnsLine, SIGNAL(textChanged(QString)), this, SLOT(DNSLine_ValueChanged(QString)));
+    connect ( ui->dnsLine, SIGNAL(textChanged(QString)), this, SLOT(DNSLine_ValueChanged()));
 
 	connect ( ui->ipLine, SIGNAL(				returnPressed() ), this, SLOT(	startScanButtonClicked() ) );
 	connect ( ui->threadLine, SIGNAL(			returnPressed() ), this, SLOT(	startScanButtonClicked() ) );
@@ -2225,7 +2166,6 @@ void nesca_3::ConnectEvrthng()
 
 	connect(stt, SIGNAL(changeFoundData(QString)), this, SLOT(appendDefaultText(QString)));
 
-	connect ( stt, SIGNAL(signalDataSaved(bool)), this, SLOT(changeNSTrackLabel(bool)));
 	connect ( adtHN, SIGNAL(sDrawActivityLine(QString)), this, SLOT(slotDrawActivityLine(QString)));
 	connect ( adtHN, SIGNAL(sDrawGrid()), this, SLOT(slotDrawActivityGrid()));
 	connect ( dtHN, SIGNAL(sAddDelimLines()), this, SLOT(slotDrawDelimLines()));
@@ -2235,19 +2175,13 @@ void nesca_3::ConnectEvrthng()
 	connect ( dtME2, SIGNAL(sDrawTextPlacers()), this, SLOT(slotDrawTextPlacers()));
 	connect ( dtQoS, SIGNAL(sAddLine()), this, SLOT(slotQoSAddLine()));
 	connect ( dtGridQoS, SIGNAL(sAddLine()), this, SLOT(slotQoSAddGrid()));
-	connect ( dtGridQoS, SIGNAL(sAddDelimLines()), this, SLOT(slotQoSDrawDelimLines()));
+    //connect ( dtGridQoS, SIGNAL(sAddDelimLines()), this, SLOT(slotQoSDrawDelimLines()));
 	connect ( vsTh, SIGNAL(sAddLine()), this, SLOT(slotVoiceAddLine()));
 	connect ( vsTh, SIGNAL(sDrawGrid(int)), this, SLOT(slotDrawVoiceGrid(int)));
 	connect ( vsTh, SIGNAL(sDrawTextPlacers()), this, SLOT(slotDrawTextPlacers()));
 	connect ( psTh, SIGNAL(sUpdatePie()), this, SLOT(slotUpdatePie()) );
 	connect ( ui->tabMainWidget, SIGNAL(currentChanged(int)), this, SLOT(slotTabChanged(int)) );
-	/*Msg blinker*/
-	//connect ( irc_nmb, SIGNAL(sBlinkMessage()), this, SLOT(slotBlinkMessage()) );
-
-	//BA TablelistView
-	connect(stt, SIGNAL(signalAddBARow(int&, QString)), this, SLOT(slotAddBARow(int&, QString)));
-	//connect(stt, SIGNAL(signalAddBARow(int &, QString, QString, QString)), this, SLOT(slotAddBARow(int &, QString, QString, QString)));
-	connect(stt, SIGNAL(signalChangeBARow(int, QString, QString)), this, SLOT(slotChangeBARow(int, QString, QString)));
+    connect(stt, SIGNAL(signalChangeBARow(int, QString, QString)), this, SLOT(slotChangeBARow(int, QString, QString)));
 }
 
 void nesca_3::saveOptions()
@@ -2397,18 +2331,7 @@ void RestoreSession()
 				};
 			};
 
-            /*setUIText("[NDBSERVER]:", ui->lineTrackerSrv, resStr);
-			setUIText("[NDBSCRIPT]:", ui->lineTrackerScr, resStr);
-            setUIText("[NDBPORT]:", ui->trcSrvPortLine, resStr);*/
-			if (strstr(resStr, "[PING]:") != NULL) {
-				lex = strstr(resStr, "[PING]:") + strlen("[PING]:");
-
-				if (strlen(lex) > 1)
-				{
-					lex[strlen(lex) - 1] = '\0';
-					ui->pingingOnOff->setChecked(strcmp(lex, "true") == 0 ? true : false);
-				};
-			} else if (strstr(resStr, "[SHUFFLE]:") != NULL) {
+            if (strstr(resStr, "[SHUFFLE]:") != NULL) {
 				lex = strstr(resStr, "[SHUFFLE]:") + strlen("[SHUFFLE]:");
 
 				if (strlen(lex) > 1)
@@ -2416,16 +2339,7 @@ void RestoreSession()
 					lex[strlen(lex) - 1] = '\0';
 					ui->shuffle_onoff->setChecked(strcmp(lex, "true") == 0 ? true : false);
 				};
-			} else if (strstr(resStr, "[NSTRACK]:") != NULL) {
-				lex = strstr(resStr, "[NSTRACK]:") + strlen("[NSTRACK]:");
-
-				if (strlen(lex) > 1)
-				{
-					lex[strlen(lex) - 1] = '\0';
-					ui->trackerOnOff->setChecked(strcmp(lex, "true") == 0 ? true : false);
-				};
-			}
-			setUIText("[PING_TO]:", ui->PingTO, resStr);
+            }
 			setUIText("[THREAD_DELAY]:", ui->threadDelayBox, resStr);
 			if (strstr(resStr, "[TIMEOUT]:") != NULL) {
 				const QString &tempLex = loadNescaSetup(resStr, "[TIMEOUT]:");
@@ -2436,11 +2350,6 @@ void RestoreSession()
 				}
 			}
 			setUIText("[MAXBTHR]:", ui->maxBrutingThrBox, resStr);
-            //setUIText("[PERSKEY]:", ui->linePersKey, resStr);
-			//ZeroMemory(trcPersKey, sizeof(trcPersKey));
-			trcPersKey[0] = 0;
-			strncpy(trcPersKey, resStr, 32);
-			memset(trcPersKey + 32, '\0', 1);
             /*setUIText("[SYSTEMPROXYIP]:", ui->systemProxyIP, resStr);
             setUIText("[SYSTEMPROXYPORT]:", ui->systemProxyPort, resStr);*/
 
@@ -2536,16 +2445,6 @@ void nesca_3::slotShowRedVersion()
 	ui->rVerLabel->show();
 }
 
-void _startVerCheck()
-{
-	vct->start();
-}
-
-void _startMsgCheck()
-{
-	mct->start();
-}
-
 void nesca_3::mousePressEvent(QMouseEvent *event)
 {
 	if (event->button() == Qt::LeftButton) {
@@ -2598,23 +2497,12 @@ void nesca_3::trayButtonClicked()
 	};
 }
 
-void nesca_3::ChangeShuffle(bool val)
-{
+void nesca_3::ChangeShuffle(bool val) {
 	gShuffle = val;
 }
 
-void nesca_3::ChangeTrackerOK(bool val)
-{
-	trackerOK = val;
-}
-
-void nesca_3::ChangePingerOK(bool val)
-{
-	ui->PingTO->setEnabled(val);
-	gPingNScan = val;
-
-	if(val == false) ui->PingTO->setStyleSheet("color: rgb(116, 116, 116);background-color: rgb(56, 56, 56);border:none;");
-	else ui->PingTO->setStyleSheet("color: rgb(216, 216, 216);background-color: rgb(56, 56, 56);border:none;");
+void nesca_3::ChangeDebug(bool val) {
+    gDebugMode = val;
 }
 
 bool stopFirst;
@@ -2665,21 +2553,6 @@ void nesca_3::startScanButtonClickedDNS()
 	if(startFlag == false)
 	{
 		stt->doEmitionStartScanDNS();
-		//if(trackerOK)
-		//{
-		//	if(ui->linePersKey->text().size() != 0)
-		//	{
-		//		CheckPersKey();
-		//	}
-		//	else
-		//	{
-		//		stt->doEmitionRedFoundData("Empty \"Personal key\" field. ");
-		//	};
-		//}
-		//else
-		//{
-		//	stt->doEmitionStartScanDNS();				
-		//};
 	}
 	else
 	{
@@ -2723,21 +2596,6 @@ void nesca_3::importAndScan()
 	if (startFlag == false)
 	{
 		stt->doEmitionStartScanImport();
-		//if (trackerOK)
-		//{
-		//	if (ui->linePersKey->text().size() != 0)
-		//	{
-		//		CheckPersKey();
-		//	}
-		//	else
-		//	{
-		//		stt->doEmitionRedFoundData("Empty \"Personal key\" field. ");
-		//	};
-		//}
-		//else
-		//{
-		//	stt->doEmitionStartScanImport();
-		//};
 	}
 	else
 	{
@@ -2933,11 +2791,6 @@ void nesca_3::saveTLD(QString str){
 	strncpy(gTLD, str.toLocal8Bit().data(), 128);
 }
 
-void nesca_3::PingTO_ChangeValue(QString str)
-{
-	gPingTimeout = str.toInt();
-}
-
 void nesca_3::ThreadDelay_ChangeValue(QString str)
 {
 	Threader::gThreadDelay = str.toInt();
@@ -3034,7 +2887,7 @@ QString GetColorCode(int mode, QString str)
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
 void enableHikvisionSupport(){
-	HINSTANCE hGetProcIDDLL = LoadLibraryW((LPCWSTR)L".\\HCNetSDK.dll");
+    auto hGetProcIDDLL = LoadLibraryW(L".\\HCNetSDK.dll");
 
 	if (!hGetProcIDDLL) {
 		HikVis::isInitialized = false;
@@ -3092,8 +2945,6 @@ void nesca_3::finishLoading() {
 	//std::thread fuThread(FileDownloader::checkWebFiles);
 	//fuThread.detach();
 
-	_startVerCheck();
-    //_startMsgCheck();
 	qrp.setMinimal(true);
 	drawVerboseArcs(0);
 

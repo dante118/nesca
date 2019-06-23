@@ -13,7 +13,7 @@ void STh::doEmitionShowRedVersion()
 }
 void STh::doEmitionStartScanIP()
 {
-	emit stt->startScanIP();	
+    emit stt->startScanIP();
 }
 void STh::doEmitionStartScanDNS()
 {

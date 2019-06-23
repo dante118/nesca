@@ -72,11 +72,11 @@ int pConnect(const char* ip, const int port, std::string *buffer,
 			//curl_easy_setopt(curl, CURLOPT_DEBUGDATA, &config);
 			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 		}
-		curl_easy_setopt(curl, CURLOPT_URL, ip);
-		curl_easy_setopt(curl, CURLOPT_PORT, port);
+        curl_easy_setopt(curl, CURLOPT_URL, ip);
+        curl_easy_setopt(curl, CURLOPT_PORT, port);
 		curl_easy_setopt(curl, CURLOPT_USERAGENT,
 			"Mozilla/5.0 (X11; Linux x86_64; rv:35.0) Gecko/20100101 Firefox/35.0");
-		curl_easy_setopt(curl, CURLOPT_HEADER, 1L);
+        curl_easy_setopt(curl, CURLOPT_HEADER, 1L);
 		curl_easy_setopt(curl, CURLOPT_AUTOREFERER, 1L);
 		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYSTATUS, 0L);
 		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
@@ -94,15 +94,14 @@ int pConnect(const char* ip, const int port, std::string *buffer,
 		if (postData != NULL) curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData);
 
 		if (customHeaders != NULL) {
-
 			struct curl_slist *chunk = NULL;
 			for (auto &ch : *customHeaders) chunk = curl_slist_append(chunk, ch.c_str());
 			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
 		}
 
 		if (lpString != NULL) {
-			curl_easy_setopt(curl, CURLOPT_UNRESTRICTED_AUTH, 1L);
-			curl_easy_setopt(curl, CURLOPT_FTPLISTONLY, 1L);
+            curl_easy_setopt(curl, CURLOPT_UNRESTRICTED_AUTH, 1L);
+            curl_easy_setopt(curl, CURLOPT_DIRLISTONLY, 1L);
 			curl_easy_setopt(curl, CURLOPT_USERPWD, lpString->c_str());
 			if (digestMode)
 			{
@@ -133,22 +132,14 @@ int pConnect(const char* ip, const int port, std::string *buffer,
 			return -1;
 		}
 		else if (res == CURLE_OPERATION_TIMEDOUT
-			|| res == CURLE_COULDNT_CONNECT
-			|| res == CURLE_SEND_ERROR
-			|| res == CURLE_RECV_ERROR
+              || res == CURLE_COULDNT_CONNECT
+              || res == CURLE_SEND_ERROR
+              || res == CURLE_RECV_ERROR
+              || res == 28
 			) {
-			//if (gNegDebugMode)
-			//{
-			//	stt->doEmitionDebugFoundData("NConnect failed (curl_code: " + QString::number(res) + ") [<a href=\"" + QString(ip) +
-			//		"/\"><font color=\"#0084ff\">" + QString(ip) + " Port:" + QString::number(port) + "</font></a>]");
-			//}
 			SOCKET eNobuffSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 			shutdown(eNobuffSocket, SD_BOTH);
 			closesocket(eNobuffSocket);
-            /*if (ENOBUFS == eNobuffSocket || ENOMEM == eNobuffSocket) {
-				stt->doEmitionRedFoundData("Insufficient buffer/memory space. Sleeping for 10 sec...");
-				Sleep(10000);
-            }*/
 			return -1;
 		}
 		else {
@@ -460,36 +451,27 @@ bool portCheck(const char * sDVRIP, int wDVRPort) {
 }
 int Connector::connectToPort(char* ip, int port)
 {
-//    if(gPingNScan)
-//    {
-//        if(_pingMyTarget(ip) == 0) return -2;
-//    };
-
     std::string buffer;
     int size = 0;
 	char tempIp[128] = { 0 };
 	int sz = strlen(ip);
 	if (443 == port) {
 		sprintf(tempIp, "https://%s:%d", ip, port);
-		//strcpy(tempIp, "https://");
 	}
 	else if (21 == port) {
-		//strcpy(tempIp, "ftp://");
-		sprintf(tempIp, "ftp://%s:%d", ip, port);
-		//sprintf(tempIp, "%s", ip);
+        sprintf(tempIp, "ftp://%s:%d", ip, port);
 	}
 	/*else if (554 == port) {
 		sprintf(tempIp, "rtsp://%s:%d", ip, port);
 	}*/
 	else {
-		//strcpy(tempIp, "http://");
 		sprintf(tempIp, "http://%s:%d", ip, port);
 	}
 	//strncat(tempIp, ip, sz > 96 ? 96 : sz);
 
-	if (port != 37777 && port != 8000 && port != 34567 && port != 9000){
+    if (port != 37777 && port != 8000 && port != 34567 && port != 9000) {
 		if (port == 22) size = SSHAuth::SSHLobby(ip, port, &buffer);			//SSH
-		else if (21 == port) size = nConnect(ip, port, &buffer);
+        else if (21 == port) size = nConnect(ip, port, &buffer);
 		else size = nConnect(tempIp, port, &buffer);
 
 		if (size > 0)

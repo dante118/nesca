@@ -1,7 +1,8 @@
 #include "MainStarter.h"
+#include "cmath"
+#include "QDir"
 
 int gTimeOut = 3;
-int gPingTimeout = 1;
 int gMode;
 int PieCamerasC1 = 0, PieBA = 0, PieOther = 0, PieSSH = 0;
 int camerasC1 = 0, filtered = 0, Overl = 0, Alive = 0, saved = 0, other = 0, ssh = 0;
@@ -17,7 +18,6 @@ char gTLD[128] = { 0 };
 char gPorts[65536] = { 0 };
 char currentIP[MAX_ADDR_LEN] = { 0 };
 char finalIP[32] = { 0 };
-bool gPingNScan = false;
 std::atomic<int> cons(0), BrutingThrds(0), gThreads(0);
 std::vector<int> MainStarter::portVector(0);
 int MainStarter::flCounter = 0;
@@ -416,47 +416,7 @@ void MainStarter::saveBackupToFile()
 		saveStr[0] = 0;
 	}
 
-	sprintf(saveStr, "[NDBSERVER]:%s\n", trcSrv);
-	strcat(saveBuffer, saveStr);
-	//ZeroMemory(saveStr, sizeof(saveStr));
-	saveStr[0] = 0;
-
-	sprintf(saveStr, "[NDBSCRIPT]:%s\n", trcScr);
-	strcat(saveBuffer, saveStr);
-	//ZeroMemory(saveStr, sizeof(saveStr));
-	saveStr[0] = 0;
-
-	sprintf(saveStr, "[NDBPORT]:%s\n", trcSrvPortLine);
-	strcat(saveBuffer, saveStr);
-	//ZeroMemory(saveStr, sizeof(saveStr));
-	saveStr[0] = 0;
-
-	sprintf(saveStr, "[PROXY]:%s\n", trcProxy);
-	strcat(saveBuffer, saveStr);
-	//ZeroMemory(saveStr, sizeof(saveStr));
-	saveStr[0] = 0;
-
-	sprintf(saveStr, "[PROXYPORT]:%s\n", trcPort);
-	strcat(saveBuffer, saveStr);
-	//ZeroMemory(saveStr, sizeof(saveStr));
-	saveStr[0] = 0;
-
-	sprintf(saveStr, "[PING]:%s\n", gPingNScan ? "true" : "false");
-	strcat(saveBuffer, saveStr);
-	//ZeroMemory(saveStr, sizeof(saveStr));
-	saveStr[0] = 0;
-
 	sprintf(saveStr, "[SHUFFLE]:%s\n", gShuffle ? "true" : "false");
-	strcat(saveBuffer, saveStr);
-	//ZeroMemory(saveStr, sizeof(saveStr));
-	saveStr[0] = 0;
-
-	sprintf(saveStr, "[NSTRACK]:%s\n", trackerOK ? "true" : "false");
-	strcat(saveBuffer, saveStr);
-	//ZeroMemory(saveStr, sizeof(saveStr));
-	saveStr[0] = 0;
-
-	sprintf(saveStr, "[PING_TO]: %d\n", gPingTimeout);
 	strcat(saveBuffer, saveStr);
 	//ZeroMemory(saveStr, sizeof(saveStr));
 	saveStr[0] = 0;
@@ -482,13 +442,6 @@ void MainStarter::saveBackupToFile()
 	saveStr[0] = 0;
 
 	sprintf(saveStr, "[SYSTEMPROXYPORT]: %s\n", gProxyPort);
-	strcat(saveBuffer, saveStr);
-	//ZeroMemory(saveStr, sizeof(saveStr));
-	saveStr[0] = 0;
-
-	strcpy(saveStr, "[PERSKEY]:");
-	strncat(saveStr, trcPersKey, 32);
-	strcat(saveStr, "\n");
 	strcat(saveBuffer, saveStr);
 	//ZeroMemory(saveStr, sizeof(saveStr));
 	saveStr[0] = 0;
@@ -538,363 +491,6 @@ void _IPPerSecTimer() {
 	ipPerSecTimer = false;
 }
 
-bool trackerRunning = false;
-void _tracker() {
-	trackerRunning = true;
-	while (true) {
-		while (globalScanFlag && !trackerOK) Sleep(1000);
-
-		if (!globalScanFlag && jsonArr->size() == 0) break;
-		char rBuffT[250000] = { 0 };
-		char *msg = new char[4096];
-		//ZeroMemory(msg, sizeof(*msg));
-		msg[0] = 0;
-		char ndbServer[64] = { 0 };
-		char ndbScriptT[64] = { 0 };
-		char ndbScript[64] = { 0 };
-
-		sockaddr_in sockAddr;
-		sockAddr.sin_family = AF_INET;
-		sockAddr.sin_port = htons(atoi(trcSrvPortLine));
-
-		sprintf(msg, "GET /%s HTTP/1.1\r\nHost: %s\r\nX-Nescav3: True\r\nContent-Type: application/x-www-form-urlencoded\r\nConnection: close\r\n\r\n",
-			trcScr, trcSrv);
-
-		HOSTENT *host;
-
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
-		if (inet_addr(trcSrv) != INADDR_NONE) sockAddr.sin_addr.S_un.S_addr = inet_addr(trcSrv);
-		else if (host = gethostbyname(trcSrv)) ((unsigned long*)&sockAddr.sin_addr)[0] = ((unsigned long**)host->h_addr_list)[0][0];
-#else
-		if (inet_addr(trcSrv) != INADDR_NONE) sockAddr.sin_addr.s_addr = inet_addr(trcSrv);
-		else if (host = gethostbyname(trcSrv)) ((unsigned long*)&sockAddr.sin_addr)[0] = ((unsigned long**)host->h_addr_list)[0][0];
-#endif
-		SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-		if (connect(sock, (sockaddr*)&sockAddr, sizeof(sockAddr)) == -1)
-		{
-			CSSOCKET(sock);
-
-			stt->doEmitionRedFoundData("[NS-Track] -Cannot connect to balancer! " + QString::number(WSAGetLastError()) + ".");
-
-			continue;
-		};
-
-		if (send(sock, msg, strlen(msg), 0) == -1)
-		{
-			CSSOCKET(sock);
-
-			stt->doEmitionRedFoundData("[NS-Track] -Cannot send to balancer! " + QString::number(WSAGetLastError()) + ".");
-
-			continue;
-		};
-
-		//ZeroMemory(rBuffT, sizeof(rBuffT));
-		rBuffT[0] = 0;
-		char rBuff[512] = { 0 };
-		int test = recv(sock, rBuff, sizeof(rBuff), 0);
-		strcpy(rBuffT, rBuff);
-
-		while ((test = recv(sock, rBuff, sizeof(rBuff), 0)) != 0)
-		{
-			if (strlen(rBuffT) > 200000)
-			{
-				stt->doEmitionRedFoundData("[NS-Track] (Outer) -Large error received from server (>200000b) " + 
-					QString::number(WSAGetLastError()) + ".");
-				break;
-			};
-			strcat(rBuffT, rBuff);
-		};
-
-		if (test == -1)
-		{
-			CSSOCKET(sock);
-
-			stt->doEmitionRedFoundData("[NS-Track] -Cannot recv from balancer! " + QString::number(WSAGetLastError()) + ".");
-
-			continue;
-		};
-
-		char *t1;
-		char *t2;
-		if (strstr(rBuffT, "http://") != NULL)
-		{
-			t1 = strstr(rBuffT, "http://");
-			if (strstr((char*)(t1 + 7), "/") != NULL)
-			{
-				t2 = strstr((char*)(t1 + 7), "/");
-				int ln = t2 - t1 - 7;
-				if (ln > 64)
-				{
-					CSSOCKET(sock);
-
-					stt->doEmitionRedFoundData("[NS-Track] -Received server string is not valid!");
-
-					continue;
-				}
-				else strncpy(ndbServer, (char*)(t1 + 7), ln);
-
-				if (strlen(t2) > 64)
-				{
-
-					stt->doEmitionYellowFoundData("[NS-Track] -Fragmentation detected!");
-
-					if (strstr(t2, "\r\n") != NULL)
-					{
-						char *t3 = strstr(t2, "\r\n");
-						int y = (int)(t3 - t2);
-
-						if (y > 64)
-						{
-							CSSOCKET(sock);
-
-							stt->doEmitionRedFoundData("[NS-Track] -Received server string is not valid!");
-
-							continue;
-						}
-						else
-						{
-							strncpy(ndbScriptT, t2, y);
-							CSSOCKET(sock);
-
-							stt->doEmitionGreenFoundData("[NS-Track] -OK! -Fragmented server string aquired! Starting NS-Track loop...");
-
-							strncpy(ndbScript, ndbScriptT, strlen(ndbScriptT));
-						};
-					}
-					else
-					{
-						CSSOCKET(sock);
-
-						stt->doEmitionRedFoundData("[NS-Track] -Received server string is not valid!");
-
-						continue;
-					};
-				}
-				else
-				{
-					strcpy(ndbScriptT, t2);
-
-					stt->doEmitionGreenFoundData("[NS-Track] -OK! -Server string aquired! Starting NS-Track loop...");
-
-					CSSOCKET(sock);
-					strncpy(ndbScript, ndbScriptT, strlen(ndbScriptT) - 2);
-				};
-			}
-			else
-			{
-				CSSOCKET(sock);
-
-				stt->doEmitionRedFoundData("[NS-Track] -Cannot receive script value!");
-
-				continue;
-			};
-
-			//ZeroMemory(rBuffT, sizeof(rBuffT));
-			rBuffT[0] = 0;
-			CSSOCKET(sock);
-
-			while (true)
-			{
-				if (!globalScanFlag && jsonArr->size() == 0) break;
-				if (!trackerOK) {
-					Sleep(1000);
-					continue;
-				};
-
-				if (jsonArr->size() > 0)
-				{
-					QJsonObject jsonKey;
-					if (jsonArr == NULL) jsonArr = new QJsonArray();
-
-					QJsonObject jsonMeta;
-					if (gMode == 0) jsonMeta.insert("mode", QJsonValue(QString("IP")));					//
-					else if (gMode == 1) jsonMeta.insert("mode", QJsonValue(QString("DNS")));			//Mode
-					else if (gMode == -1) jsonMeta.insert("mode", QJsonValue(QString("Import")));		//
-					jsonMeta.insert("range", QJsonValue(QString(metaRange)));
-					jsonMeta.insert("current", QJsonValue(QString(currentIP)));
-					if (gMode == 1) jsonMeta.insert("tld", QJsonValue(QString(gTLD)));					//TLD
-					jsonMeta.insert("targets", QJsonValue(QString(metaTargets)));
-					jsonMeta.insert("percent", QJsonValue(QString(metaPercent)));
-					jsonMeta.insert("saved", QJsonValue(QString::number(saved)));
-					jsonMeta.insert("found", QJsonValue(QString::number(found)));
-					jsonMeta.insert("speed", QJsonValue(QString(metaIPS)));
-					jsonMeta.insert("eta", QJsonValue(QString(metaETA)));
-					jsonMeta.insert("threads", QJsonValue(QString::number(cons) + "/" + QString::number(gThreads)));
-					jsonMeta.insert("bads", QJsonValue("-1"));
-					jsonMeta.insert("version", QJsonValue(QString(gVER)));
-
-					jsonArr->push_front(QJsonValue(jsonMeta));
-					memset(trcPersKey + 32, '\0', 1);
-					jsonKey.insert("key", QJsonValue(QString(trcPersKey)));
-					jsonArr->push_front(jsonKey);
-
-					QJsonDocument js;
-					js.setArray(*jsonArr);
-					QByteArray r = js.toJson();
-
-					sockAddr.sin_family = AF_INET;
-					sockAddr.sin_port = htons(atoi(trcSrvPortLine));
-
-					if (msg != NULL)
-					{
-						delete[]msg;
-						msg = 0;
-					};
-
-					msg = new char[r.size() + 1024];
-					//ZeroMemory(msg, sizeof(*msg));
-					msg[0] = 0;
-
-					strcpy(msg, "POST /");
-					strcat(msg, ndbScript);
-					strcat(msg, " HTTP/1.1\r\nHost: ");
-					strcat(msg, ndbServer);
-					strcat(msg, "\r\nContent-Type: application/json\r\nAccept-Encoding: application/json\r\nContent-Length: ");
-					strcat(msg, std::to_string(r.size()).c_str());
-					strcat(msg, "\r\nConnection: close\r\n\r\n");
-
-					strcat(msg, r.data());
-
-					delete jsonArr;
-					jsonArr = new QJsonArray();
-
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
-					if (inet_addr(ndbServer) != INADDR_NONE) sockAddr.sin_addr.S_un.S_addr = inet_addr(ndbServer);
-					else if (host = gethostbyname(ndbServer)) ((unsigned long*)&sockAddr.sin_addr)[0] = ((unsigned long**)host->h_addr_list)[0][0];
-#else
-					if (inet_addr(ndbServer) != INADDR_NONE) sockAddr.sin_addr.s_addr = inet_addr(ndbServer);
-					else if (host = gethostbyname(ndbServer)) ((unsigned long*)&sockAddr.sin_addr)[0] = ((unsigned long**)host->h_addr_list)[0][0];
-#endif
-					sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-					if (gDebugMode)
-					{
-						stt->doEmitionDebugFoundData("Connecting to " + QString(ndbServer));
-					};
-
-					if (connect(sock, (sockaddr*)&sockAddr, sizeof(sockAddr)) == -1)
-					{
-						CSSOCKET(sock);
-
-
-						stt->doEmitionRedFoundData("[NS-Track] connect() returned " + 
-							QString::number(WSAGetLastError()) + ".");
-
-						continue;
-					};
-
-					if (gDebugMode)
-					{
-						stt->doEmitionDebugFoundData("Sending!");
-						stt->doEmitionDebugFoundData("Key: [" + QString(trcPersKey) + "]");
-						stt->doEmitionDebugFoundData("MSG: [" + QString(msg) + "]");
-					};
-
-					if (send(sock, msg, strlen(msg), 0) == -1)
-					{
-						CSSOCKET(sock);
-
-						stt->doEmitionRedFoundData("[NS-Track] send() returned " + 
-							QString::number(WSAGetLastError()) + ".");
-
-						continue;
-					};
-
-					//ZeroMemory(rBuffT, sizeof(rBuffT));
-					rBuffT[0] = 0;
-					char msgR[32] = { 0 };
-
-					if (gDebugMode)
-					{
-						stt->doEmitionDebugFoundData("Receiving...");
-					};
-
-					test = recv(sock, rBuff, 512, 0);
-
-					if (gDebugMode)
-					{
-						stt->doEmitionDebugFoundData("Received: " + QString(rBuff));
-					};
-
-					strncpy(msgR, rBuff, 32);
-					strcpy(rBuffT, rBuff);
-					while (test > 0)
-					{
-						if (test <= 0) break;
-
-						if (strlen(rBuffT) > 200000)
-						{
-							stt->doEmitionRedFoundData("[NS-Track] (Inner) Large error received from server (>200000b) " + 
-								QString::number(WSAGetLastError()) + ".");
-							break;
-						};
-						strcat(rBuffT, rBuff);
-						test = recv(sock, rBuff, 512, 0);
-						if (gDebugMode)
-						{
-							stt->doEmitionDebugFoundData("Received: " + QString(rBuff));
-						};
-					};
-
-					if (test == -1)
-					{
-						CSSOCKET(sock);
-
-						stt->doEmitionRedFoundData("[NS-Track] recv() returned " + QString::number(WSAGetLastError()) + ".");
-
-						continue;
-					};
-
-					if (strstr(rBuffT, "201 Created") != NULL)
-					{
-
-						if (gDebugMode) stt->doEmitionYellowFoundData("[NS-Track] OK. Data saved!");
-						stt->doEmitionDataSaved(true);
-						Sleep(1000);
-						stt->doEmitionDataSaved(false);
-
-					}
-					else if (strstr(rBuffT, "400 Bad Request") != NULL)
-					{
-						QString errorDef = Utils::GetNSErrorDefinition(rBuffT, "notify");
-						if (errorDef == "Invalid access key") stt->doEmitionYellowFoundData("[NS-Track] [Key is unauthorized] A valid key is required.");
-						else stt->doEmitionYellowFoundData("[NS-Track] FAIL! [400 Bad Request : " + errorDef + "]");
-
-					}
-					else
-					{
-						stt->doEmitionYellowFoundData("[NS-Track] FAIL! An error occured [" + QString(msgR) + "]");
-					};
-
-					msgR[0] = 0;
-					rBuffT[0] = 0;
-					msg[0] = 0;
-					/*ZeroMemory(msgR, sizeof(msgR));
-					ZeroMemory(rBuffT, sizeof(rBuffT));
-					ZeroMemory(msg, sizeof(*msg));*/
-
-					if (msg != NULL)
-					{
-						delete msg;
-						msg = NULL;
-					};
-
-					CSSOCKET(sock);
-				};
-				Sleep(10000);
-			};
-		}
-		else
-		{
-			stt->doEmitionRedFoundData("[NS-Track] Balancer replied with invalid string.");
-		};
-
-		CSSOCKET(sock);
-	}
-
-	trackerRunning = false;
-}
 
 void verboseProgress(unsigned long target) {
 	stt->doEmitionUpdateArc(gTargets);
@@ -1372,10 +968,6 @@ void MainStarter::runAuxiliaryThreads() {
 		std::thread lpThread(FileUpdater::updateLists);
 		lpThread.detach();
 	}
-	//if (!trackerRunning) {
-	//	std::thread trackerThread(_tracker);
-	//	trackerThread.detach();
-	//}
 	if (!ipPerSecTimer) {
 		std::thread timerThread(_IPPerSecTimer);
 		timerThread.detach();
@@ -1389,15 +981,15 @@ void MainStarter::runAuxiliaryThreads() {
 void MainStarter::createResultFiles() {
 	char fileName[256] = { 0 };
 	sprintf(fileName, "./" DIR_NAME "%s_%s", Utils::getStartDate().c_str(), Utils::getCurrentTarget().c_str());
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
-	bool res = CreateDirectoryA(fileName, NULL);
+    QDir myDir("");
+    bool res = myDir.mkpath(fileName);
 	if (!res) {
 		int err = GetLastError();
 		if (err != 183)
 		{
 			while (!res) {
 				stt->doEmitionRedFoundData("Failed to create \"" + QString::fromLocal8Bit(fileName) + "\" Err: " + QString::number(err));
-				res = CreateDirectoryA(fileName, NULL);
+                bool res = myDir.mkpath(fileName);
 				err = GetLastError();
 				Sleep(1000);
 			}
@@ -1407,12 +999,6 @@ void MainStarter::createResultFiles() {
 	} else {
 		stt->doEmitionGreenFoundData("Result directory \"" + QString::fromLocal8Bit(fileName) + "\" successfully created.");
 	}
-#else
-	struct stat str = { 0 };
-	if (stat(fileName, &str) == -1) {
-		mkdir(fileName, 0700);
-	}
-#endif
 }
 
 /* This array will store all of the mutexes available to OpenSSL. */

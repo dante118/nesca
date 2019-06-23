@@ -97,7 +97,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>3</number>
      </property>
      <property name="elideMode">
       <enum>Qt::ElideMiddle</enum>
@@ -965,127 +965,6 @@ color: rgb(214, 214, 0);</string>
       <attribute name="title">
        <string>Options</string>
       </attribute>
-      <widget class="QCheckBox" name="trackerOnOff">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="geometry">
-        <rect>
-         <x>30</x>
-         <y>60</y>
-         <width>281</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <family>Small Fonts</family>
-         <pointsize>7</pointsize>
-        </font>
-       </property>
-       <property name="whatsThis">
-        <string>d3w.org database (NDB) collects all found sites for structuring and further analysis.</string>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">color: rgb(216, 216, 216); background-color: rgba(2, 2, 2, 0);</string>
-       </property>
-       <property name="text">
-        <string>Send results to public NescaDatabase</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-       <property name="checked">
-        <bool>false</bool>
-       </property>
-      </widget>
-      <widget class="QCheckBox" name="pingingOnOff">
-       <property name="geometry">
-        <rect>
-         <x>30</x>
-         <y>40</y>
-         <width>75</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <family>Small Fonts</family>
-         <pointsize>7</pointsize>
-        </font>
-       </property>
-       <property name="whatsThis">
-        <string>Ping hosts before connection attempts.</string>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">color: rgb(216, 216, 216); background-color: rgba(2, 2, 2, 0);</string>
-       </property>
-       <property name="text">
-        <string>Ping hosts</string>
-       </property>
-       <property name="shortcut">
-        <string>Ctrl+S</string>
-       </property>
-       <property name="checked">
-        <bool>false</bool>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="PingTO">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="geometry">
-        <rect>
-         <x>110</x>
-         <y>40</y>
-         <width>51</width>
-         <height>15</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <family>Small Fonts</family>
-         <pointsize>7</pointsize>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">color: rgb(116, 116, 116);background-color: rgb(56, 56, 56);border:none;</string>
-       </property>
-       <property name="text">
-        <string>2</string>
-       </property>
-       <property name="maxLength">
-        <number>5</number>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-       <property name="placeholderText">
-        <string>100</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label">
-       <property name="geometry">
-        <rect>
-         <x>160</x>
-         <y>40</y>
-         <width>31</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <family>Small Fonts</family>
-         <pointsize>7</pointsize>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">color: rgb(216, 216, 216); background-color: rgba(2, 2, 2, 0);</string>
-       </property>
-       <property name="text">
-        <string>sec</string>
-       </property>
-      </widget>
       <widget class="QLineEdit" name="threadDelayBox">
        <property name="enabled">
         <bool>true</bool>
@@ -1093,7 +972,7 @@ color: rgb(214, 214, 0);</string>
        <property name="geometry">
         <rect>
          <x>390</x>
-         <y>30</y>
+         <y>20</y>
          <width>51</width>
          <height>20</height>
         </rect>
@@ -1124,7 +1003,7 @@ color: rgb(214, 214, 0);</string>
        <property name="geometry">
         <rect>
          <x>320</x>
-         <y>30</y>
+         <y>20</y>
          <width>68</width>
          <height>16</height>
         </rect>
@@ -1146,7 +1025,7 @@ color: rgb(214, 214, 0);</string>
        <property name="geometry">
         <rect>
          <x>320</x>
-         <y>50</y>
+         <y>40</y>
          <width>62</width>
          <height>26</height>
         </rect>
@@ -1172,7 +1051,7 @@ color: rgb(214, 214, 0);</string>
        <property name="geometry">
         <rect>
          <x>390</x>
-         <y>60</y>
+         <y>50</y>
          <width>51</width>
          <height>20</height>
         </rect>
@@ -1228,6 +1107,46 @@ color: rgb(214, 214, 0);</string>
        </property>
        <property name="checked">
         <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="debug_onoff">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>40</y>
+         <width>161</width>
+         <height>17</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Small Fonts</family>
+         <pointsize>7</pointsize>
+        </font>
+       </property>
+       <property name="mouseTracking">
+        <bool>true</bool>
+       </property>
+       <property name="whatsThis">
+        <string>Shuffle ip-ranges before scan.</string>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: rgb(216, 216, 216); background-color: rgba(2, 2, 2, 0);</string>
+       </property>
+       <property name="text">
+        <string>Debug mode</string>
+       </property>
+       <property name="shortcut">
+        <string>Ctrl+S</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
        </property>
       </widget>
      </widget>
@@ -2643,31 +2562,6 @@ p, li { white-space: pre-wrap; }
       <bool>false</bool>
      </property>
     </widget>
-    <widget class="QLabel" name="NSTrackStatusLabel">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="geometry">
-      <rect>
-       <x>456</x>
-       <y>0</y>
-       <width>8</width>
-       <height>8</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <family>Small Fonts</family>
-       <pointsize>7</pointsize>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-color: black; border: 1px solid #313131;</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
     <widget class="QGraphicsView" name="graphicsTest">
      <property name="geometry">
       <rect>
@@ -2828,11 +2722,11 @@ p, li { white-space: pre-wrap; }
      <attribute name="verticalHeaderVisible">
       <bool>false</bool>
      </attribute>
-     <attribute name="verticalHeaderDefaultSectionSize">
-      <number>20</number>
-     </attribute>
      <attribute name="verticalHeaderMinimumSectionSize">
       <number>10</number>
+     </attribute>
+     <attribute name="verticalHeaderDefaultSectionSize">
+      <number>20</number>
      </attribute>
     </widget>
     <zorder>BATableView</zorder>
@@ -2884,7 +2778,6 @@ p, li { white-space: pre-wrap; }
     <zorder>DredLabel</zorder>
     <zorder>labelSSH</zorder>
     <zorder>rVerLabel</zorder>
-    <zorder>NSTrackStatusLabel</zorder>
     <zorder>graphicsTest</zorder>
     <zorder>ipLabel</zorder>
     <zorder>labelTargetsLeft</zorder>
@@ -2894,79 +2787,6 @@ p, li { white-space: pre-wrap; }
     <zorder>labelSavedValue</zorder>
     <zorder>labelSaved</zorder>
     <zorder>currentDirectoryLine</zorder>
-   </widget>
-   <widget class="QWidget" name="widgetJOB" native="true">
-    <property name="geometry">
-     <rect>
-      <x>500</x>
-      <y>44</y>
-      <width>498</width>
-      <height>730</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Small Fonts</family>
-      <pointsize>7</pointsize>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">background-color:qlineargradient(spread:pad, x1:0.541, y1:0.500364, x2:0.54, y2:0, stop:0 rgba(16, 16, 16, 255), stop:1 rgba(0, 0, 0, 255));</string>
-    </property>
-    <widget class="QGraphicsView" name="jobRangeVisual">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>30</y>
-       <width>480</width>
-       <height>41</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <family>Small Fonts</family>
-       <pointsize>7</pointsize>
-      </font>
-     </property>
-     <property name="verticalScrollBarPolicy">
-      <enum>Qt::ScrollBarAlwaysOff</enum>
-     </property>
-     <property name="horizontalScrollBarPolicy">
-      <enum>Qt::ScrollBarAlwaysOff</enum>
-     </property>
-    </widget>
-    <widget class="QTableWidget" name="jobIPContractsTable">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>105</y>
-       <width>480</width>
-       <height>296</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <family>Small Fonts</family>
-       <pointsize>7</pointsize>
-      </font>
-     </property>
-    </widget>
-    <widget class="QTableWidget" name="jobIPWantedTable">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>425</y>
-       <width>480</width>
-       <height>296</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <family>Small Fonts</family>
-       <pointsize>7</pointsize>
-      </font>
-     </property>
-    </widget>
    </widget>
    <widget class="QPushButton" name="DataflowModeBut">
     <property name="geometry">
@@ -2996,38 +2816,10 @@ p, li { white-space: pre-wrap; }
      <string>:Dataflow</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="JobModeBut">
-    <property name="geometry">
-     <rect>
-      <x>390</x>
-      <y>50</y>
-      <width>48</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Small Fonts</family>
-      <pointsize>7</pointsize>
-     </font>
-    </property>
-    <property name="toolTip">
-     <string>IP range distribution</string>
-    </property>
-    <property name="whatsThis">
-     <string>IP range distribution</string>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">color: rgb(216, 216, 216);background-color: rgba(2, 2, 2, 0);border: 1px solid rgba(255, 255, 255, 40);</string>
-    </property>
-    <property name="text">
-     <string>:Jobs</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="edit_filter_button">
     <property name="geometry">
      <rect>
-      <x>340</x>
+      <x>390</x>
       <y>50</y>
       <width>48</width>
       <height>16</height>
@@ -3052,11 +2844,6 @@ p, li { white-space: pre-wrap; }
      <string>:Edit filter</string>
     </property>
    </widget>
-   <zorder>widgetJOB</zorder>
-   <zorder>widget</zorder>
-   <zorder>DataflowModeBut</zorder>
-   <zorder>JobModeBut</zorder>
-   <zorder>edit_filter_button</zorder>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
@@ -3068,7 +2855,6 @@ p, li { white-space: pre-wrap; }
   <tabstop>lineILVL</tabstop>
   <tabstop>dnsPortLine</tabstop>
   <tabstop>lineEditThread</tabstop>
-  <tabstop>trackerOnOff</tabstop>
   <tabstop>tabMainWidget</tabstop>
   <tabstop>startScanButton_3</tabstop>
   <tabstop>startScanButton_4</tabstop>

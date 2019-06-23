@@ -65,8 +65,6 @@ protected:
 		void onLinkClicked(QUrl);
 		void MaxBrutingThr_ChangeValue(QString str);
 		void ThreadDelay_ChangeValue(QString val);
-		void ChangePingerOK(bool val);
-		void changeNSTrackLabel(bool status);
         void DNSLine_ValueChanged();
         void slotShowRedVersion();
         void slotTabChanged(int index);
@@ -86,7 +84,6 @@ protected:
 //		void CheckPersKey();
 //		bool CheckPersKeyMain();
         void slotRestoreDefPorts();
-        void switchToJobMode();
 		void switchDataFields();
 		void importAndScan();
 		void slotQoSAddGrid();
@@ -111,10 +108,9 @@ protected:
 		void startScanButtonClicked();
 		void startScanButtonClickedDNS();
         void saveOptions();
-		void ChangeTrackerOK(bool val);
 		void ChangeShuffle(bool val);
+        void ChangeDebug(bool val);
 		void ChangeLabelThreads_ValueChanged(QString);
-		void PingTO_ChangeValue(QString);
 		void ChangeLabelTO_ValueChanged(QString);
 		void appendErrText(QString str);
 		void appendOKText(QString str);

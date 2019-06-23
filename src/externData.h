@@ -28,9 +28,9 @@ extern char **loginLst, **passLst,
 **wfLoginLst, **wfPassLst,
 **ftpLoginLst, **ftpPassLst,
 **sshlpLst;
-extern bool trackerOK, globalScanFlag, MapWidgetOpened,
+extern bool globalScanFlag, MapWidgetOpened,
     widgetIsHidden, gNegDebugMode,
-    gDebugMode, horLineFlag, gPingNScan, gShuffle,
+    gDebugMode, horLineFlag, gShuffle,
 	BALogSwitched;
 extern int found, indexIP, gMode, 
 	MaxPass, MaxLogin, 
@@ -42,15 +42,10 @@ extern int found, indexIP, gMode,
 	camerasC1, filtered, Overl, Alive, saved,
     other,
 	baCount,
-    ssh, globalPinger, gPingTimeout,
+    ssh,
 	cIndex;
 extern unsigned int Activity;
-extern char trcSrv[256], trcScr[256], trcProxy[128], trcPersKey[64],
-    trcPort[32], trcSrvPortLine[32],
-    gTLD[128], gPorts[65536],
-    gProxyIP[64], gProxyPort[8],
-    currentIP[MAX_ADDR_LEN],
-    finalIP[32];
+extern char gTLD[128], gPorts[65536], gProxyIP[64], gProxyPort[8], currentIP[MAX_ADDR_LEN], finalIP[32];
 
 extern char gVER[32];
 
